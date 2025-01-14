@@ -1,4 +1,4 @@
-﻿namespace PracProj.Models;
+﻿namespace PracProj.Models.Enums;
 
 /// <summary>
 /// Статус разрешения
