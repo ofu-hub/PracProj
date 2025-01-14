@@ -8,10 +8,10 @@ public enum PermissionStatus
   /// <summary>
   /// Активный
   /// </summary>
-  Active,
+  Active = 0,
 
   /// <summary>
   /// Неактивный
   /// </summary>
-  Inactive
+  Inactive = 1
 }

@@ -8,10 +8,10 @@ public enum AccessStatus
   /// <summary>
   /// Предоставленный
   /// </summary>
-  Granted,
+  Granted = 0,
 
   /// <summary>
   /// Отклонен
   /// </summary>
-  Denied
+  Denied = 1
 }
