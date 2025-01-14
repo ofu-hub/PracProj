@@ -1,0 +1,218 @@
+﻿@page "/dashboard"
+@using PracProj.Models
+@using PracProj.Models.Enums
+@using PracProj.Extensions
+
+<PageTitle>Главная панель управления</PageTitle>
+
+<h1>Главная панель управления</h1>
+
+<hr />
+
+<div class="accessEvents">
+    <div class="pieChart">
+        <h3>Круговая диаграмма активности</h3>
+        <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
+    </div>
+
+    <div class="dataTable">
+        <h3>Последние события доступа</h3>
+        <DataTable TModel="ViewAccessEvents" Items="viewList" AllowRowSelection="true" 
+            SelectedItem="selectedItem" RowClickedEvent="SelectedItemCallBack" SelectedItemCssClass="bg-info">
+            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.LicensePlate" />
+            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.AccessType"/>
+            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.Status"/>
+            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.Timestamp"/>
+        </DataTable>
+        <div class="d-grid gap-2">
+            <Button Color="ButtonColor.Info"> Просмотреть все события </Button>
+        </div>
+    </div>
+</div>
+
+<hr />
+
+<div class="selectedViewItem">
+    <h3>Информация об выбранном событии</h3>
+    @if (selectedItem is null) {
+        <p>Событие не выбрано. Выберите событие из таблицы "Последние события доступа"</p>
+    }
+    else {
+        <Card Style="width:auto;">
+            <CardBody>
+                <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
+            </CardBody>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                    <strong>Транспорт</strong>
+                    <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
+                </li>
+                <li class="list-group-item">
+                    <strong>Время события</strong>
+                    <p>@selectedItem.Timestamp</p>
+                </li>
+                <li class="list-group-item">
+                    <strong>Тип события</strong>
+                    <p>@selectedItem.AccessType.GetDisplayName()</p>
+                </li>
+                <li class="list-group-item">
+                    <strong>Статус доступа</strong>
+                    <p>
+                    @if (selectedItem.Status is Models.Enums.AccessStatus.Granted) {
+                        <Badge Color="BadgeColor.Success">Granted</Badge>
+                    }
+                    else {
+                        <Badge Color="BadgeColor.Danger">Denied</Badge>
+                    }
+                    </p>
+
+                </li>
+                <li class="list-group-item">
+                    <strong>Камера фиксирующая</strong>
+                    <p>@selectedItem.CameraId</p>
+                </li>
+            </ul>
+            <CardBody class="d-grid gap-2">
+                <Button Color="ButtonColor.Primary"> Подробнее о событии </Button>
+                <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
+            </CardBody>
+        </Card>
+    }
+</div>
+
+@code {
+    // todo: Mock data
+    private List<AccessEvents> accessEventsList = new List<AccessEvents>() 
+    {
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow,
+            AccessType = Models.Enums.AccessType.Entry,
+            Status = Models.Enums.AccessStatus.Granted
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddHours(3),
+            AccessType = Models.Enums.AccessType.Entry,
+            Status = Models.Enums.AccessStatus.Denied
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddHours(2),
+            AccessType = Models.Enums.AccessType.Exit,
+            Status = Models.Enums.AccessStatus.Granted
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddHours(1),
+            AccessType = Models.Enums.AccessType.Entry,
+            Status = Models.Enums.AccessStatus.Denied
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddMinutes(22),
+            AccessType = Models.Enums.AccessType.Exit,
+            Status = Models.Enums.AccessStatus.Granted
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddMinutes(12),
+            AccessType = Models.Enums.AccessType.Exit,
+            Status = Models.Enums.AccessStatus.Granted
+        },
+        new AccessEvents() {
+            Timestamp = DateTime.UtcNow.AddMinutes(45),
+            AccessType = Models.Enums.AccessType.Entry,
+            Status = Models.Enums.AccessStatus.Granted
+        }
+    };
+    private List<ViewAccessEvents> viewList = new List<ViewAccessEvents>();
+    private Dictionary<string, int> countEvents = new Dictionary<string, int>();
+
+    private ViewAccessEvents? selectedItem = null;
+
+    private PieChartConfig? _config1;
+    private Chart? _chart1;
+
+    private void SelectedItemCallBack(ViewAccessEvents item) 
+    {
+        selectedItem = item;
+    }
+
+    private void PrepateViewData() 
+    {
+        viewList = accessEventsList.Take(5).Select(x => new ViewAccessEvents() 
+        {
+            Id = x.Id,
+            AccessType = x.AccessType,
+            CameraId = x.CameraId,
+            LicensePlate = $"А101АО 30 RUS",
+            Status = x.Status,
+            Timestamp = x.Timestamp,
+            VehicleId = x.VehicleId
+        }).OrderByDescending(x => x.Timestamp).ToList();
+    }
+
+    private void CountEvents()
+    {
+        for (var i = 0; i < accessEventsList.Count; i++) {
+            var nameEnum = Enum.GetName(typeof(PracProj.Models.Enums.AccessType), (int)accessEventsList[i].AccessType)!;
+
+            if (countEvents.ContainsKey(accessEventsList[i].AccessType.ToString()))
+                countEvents[nameEnum]++;
+            else 
+                countEvents.Add(nameEnum, 1);
+
+            Console.WriteLine(countEvents[accessEventsList[i].AccessType.ToString()]);
+        }
+    }
+
+    private List<decimal?> ConvretValues() 
+    {
+        var list = new List<decimal?>();
+        var valuesList = countEvents.Values.ToList();
+
+        foreach (var item in valuesList)
+        {
+            list.Add(item);
+        }
+
+        return list;
+    }
+
+    private void ConfigChartPipeEvents()
+    {
+        _config1 = new PieChartConfig()
+            {
+                Options = new PieOptions()
+                {
+                    Responsive = true,
+                    MaintainAspectRatio = false
+                }
+            };
+
+        _config1.Data.Labels = countEvents.Keys.ToList();
+        _config1.Data.Datasets.Add(new PieDataset()
+            {
+                Label = string.Empty,
+                Data = ConvretValues(),
+                BackgroundColor = new List<string>()
+                {
+                    "rgb(255, 99, 132)",
+                    "rgb(255, 159, 64)",
+                    "rgb(255, 205, 86)",
+                    "rgb(75, 192, 192)",
+                    "rgb(54, 162, 235)",
+                    "rgb(153, 102, 255)",
+                    "rgb(201, 203, 207)"
+                },
+                HoverOffset = 4
+            });
+    }
+
+    private void ConfigDataTableEvents()
+    {
+
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        CountEvents();
+        PrepateViewData();
+        ConfigChartPipeEvents();
+    }
+}

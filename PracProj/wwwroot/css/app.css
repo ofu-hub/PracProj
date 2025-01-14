@@ -101,3 +101,9 @@ a, .btn-link {
 code {
     color: #c02d76;
 }
+
+.accessEvents {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-around;
+}
