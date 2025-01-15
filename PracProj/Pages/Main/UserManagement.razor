@@ -36,10 +36,10 @@
         <GridColumn TItem="Users" HeaderText="Роль" PropertyName="Role" SortKeySelector="item => item.Role">
             @context.Role.GetDisplayName()
         </GridColumn>
-        <GridColumn TItem="Users" HeaderText="Действия" PropertyName="Id" Filterable="false">
+        <GridColumn TItem="Users" HeaderText="Действия" PropertyName="Id" Filterable="false" Class="d-grid gap-2">
             <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Size="ButtonSize.Small">Удалить</Button>
             <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Size="ButtonSize.Small">Редактировать</Button>
-            <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>я
+            <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>
             <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">Сбросить пароль</Button>
         </GridColumn>
     </GridColumns>
@@ -88,7 +88,7 @@
     private async Task<GridDataProviderResult<Users>> UsersDataProvider(GridDataProviderRequest<Users> request)
     {
         if (users is null) // pull users only one time for client-side filtering, sorting, and paging
-            users = GetUsers(); // call a service or an API to pull the employees
+            users = GetUsers(); // call a service or an API to pull the users
 
         return await Task.FromResult(request.ApplyTo(users));
     }
