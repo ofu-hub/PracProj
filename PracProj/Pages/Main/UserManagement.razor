@@ -39,7 +39,7 @@
         <GridColumn TItem="Users" HeaderText="Действия" PropertyName="Id" Filterable="false">
             <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Size="ButtonSize.Small">Удалить</Button>
             <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Size="ButtonSize.Small">Редактировать</Button>
-            <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>
+            <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>я
             <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">Сбросить пароль</Button>
         </GridColumn>
     </GridColumns>
@@ -75,6 +75,7 @@
 </div>
 
 @code {
+    // todo: Mock data
     private IEnumerable<Users> users = default!;
     private HashSet<Users> selectedUsers = new();
 
