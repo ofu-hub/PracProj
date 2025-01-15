@@ -1,5 +1,6 @@
 ﻿@page "/cameracontrol"
 @using PracProj.Models
+@using PracProj.Models.Enums
 @using PracProj.Extensions
 
 <PageTitle>Управление камерами</PageTitle>
@@ -8,6 +9,57 @@
 
 <hr />
 
-@code {
+<Button Type="ButtonType.Button" Color="ButtonColor.Primary" @onclick="AddCamera"> Зарегестрировать камеру в системе </Button>
 
+<div class="d-flex flex-wrap">
+    @foreach (var camera in cameras)
+    {
+        <div class="card my-2" style="flex: 1 1 calc(25% - 1rem); max-width: calc(25% - 1rem);">
+            <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+                <title>Placeholder</title>
+                <rect width="100%" height="100%" fill="#868e96"></rect>
+                <text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text>
+            </svg>
+            <div class="card-body">
+                <h5 class="card-title">@camera.Id</h5>
+                <h6 class="card-subtitle mb-2 text-muted">
+                    <span class="badge rounded-pill @GetBadgeClass(camera.Status)">
+                        @camera.Status.GetDisplayName()
+                    </span>
+                </h6>
+                <p class="card-text">@camera.Location</p>
+                <a href="#" class="btn btn-primary">Открыть камеру</a>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    // todo: Mock data
+    private List<Cameras> cameras = new List<Cameras>()
+    {
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 1", Status = Models.Enums.CameraStatus.Active },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 2", Status = Models.Enums.CameraStatus.Inactive },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 3", Status = Models.Enums.CameraStatus.Active },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 4", Status = Models.Enums.CameraStatus.Maintenance },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 5", Status = Models.Enums.CameraStatus.Inactive },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 6", Status = Models.Enums.CameraStatus.Active },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 7", Status = Models.Enums.CameraStatus.Active },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 8", Status = Models.Enums.CameraStatus.Inactive },
+        new Cameras() { Id = Guid.NewGuid(), Location = "ул. Пушкина, д. 1, к. 9", Status = Models.Enums.CameraStatus.Error },
+    };
+
+    private void AddCamera() { }
+
+    private string GetBadgeClass(CameraStatus status)
+    {
+        return status switch
+        {
+            CameraStatus.Active => "bg-success",
+            CameraStatus.Inactive => "bg-danger",
+            CameraStatus.Maintenance => "bg-warning",
+            CameraStatus.Error => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
 }

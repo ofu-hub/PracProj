@@ -1,4 +1,6 @@
-﻿namespace PracProj.Models;
+﻿using PracProj.Models.Enums;
+
+namespace PracProj.Models;
 
 /// <summary>
 /// Камеры на территории жилого комплекса
@@ -14,4 +16,9 @@ public class Cameras
   /// Местоположение камеры
   /// </summary>
   public string Location { get; set; } = string.Empty;
+
+  /// <summary>
+  /// Состояние камеры
+  /// </summary>
+  public CameraStatus Status { get; set; }
 }

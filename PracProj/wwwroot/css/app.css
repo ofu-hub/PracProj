@@ -22,6 +22,7 @@ a, .btn-link {
 
 .content {
     padding-top: 1.1rem;
+    padding-bottom: 1.1rem;
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -107,3 +108,18 @@ code {
     flex-direction: row;
     justify-content: space-around;
 }
+
+.nav-link .bi {
+    line-height: 1; /* Убирает влияние line-height */
+    vertical-align: middle; /* Центрирует иконку по вертикали */
+    font-size: 1.2rem; /* Подстройте размер иконки при необходимости */
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+}
+
+    .nav-link .bi {
+        margin-right: 8px; /* Отступ для текста от иконки */
+    }

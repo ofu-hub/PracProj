@@ -19,13 +19,13 @@
         <h3>Последние события доступа</h3>
         <DataTable TModel="ViewAccessEvents" Items="viewList" AllowRowSelection="true" 
             SelectedItem="selectedItem" RowClickedEvent="SelectedItemCallBack" SelectedItemCssClass="bg-info">
-            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.LicensePlate" />
-            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.AccessType"/>
-            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.Status"/>
-            <DataTableColumn TModel="ViewAccessEvents" Property="(e) => e.Timestamp"/>
+            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
+            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
+            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
+            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Время события" Property="(e) => e.Timestamp" />
         </DataTable>
         <div class="d-grid gap-2">
-            <Button Color="ButtonColor.Info"> Просмотреть все события </Button>
+            <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
         </div>
     </div>
 </div>
@@ -59,10 +59,10 @@
                     <strong>Статус доступа</strong>
                     <p>
                     @if (selectedItem.Status is Models.Enums.AccessStatus.Granted) {
-                        <Badge Color="BadgeColor.Success">Granted</Badge>
+                            <Badge Color="BadgeColor.Success">Предоставленный</Badge>
                     }
                     else {
-                        <Badge Color="BadgeColor.Danger">Denied</Badge>
+                            <Badge Color="BadgeColor.Danger">Отклонен</Badge>
                     }
                     </p>
 
@@ -90,32 +90,32 @@
             Status = Models.Enums.AccessStatus.Granted
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(3),
+            Timestamp = DateTime.UtcNow.AddHours(-3),
             AccessType = Models.Enums.AccessType.Entry,
             Status = Models.Enums.AccessStatus.Denied
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(2),
+            Timestamp = DateTime.UtcNow.AddHours(-2),
             AccessType = Models.Enums.AccessType.Exit,
             Status = Models.Enums.AccessStatus.Granted
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(1),
+            Timestamp = DateTime.UtcNow.AddHours(-1),
             AccessType = Models.Enums.AccessType.Entry,
             Status = Models.Enums.AccessStatus.Denied
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(22),
+            Timestamp = DateTime.UtcNow.AddMinutes(-22),
             AccessType = Models.Enums.AccessType.Exit,
             Status = Models.Enums.AccessStatus.Granted
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(12),
+            Timestamp = DateTime.UtcNow.AddMinutes(-12),
             AccessType = Models.Enums.AccessType.Exit,
             Status = Models.Enums.AccessStatus.Granted
         },
         new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(45),
+            Timestamp = DateTime.UtcNow.AddMinutes(-45),
             AccessType = Models.Enums.AccessType.Entry,
             Status = Models.Enums.AccessStatus.Granted
         }

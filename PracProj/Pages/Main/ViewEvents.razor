@@ -1,6 +1,8 @@
 ﻿@page "/viewevents"
 @using PracProj.Models
+@using PracProj.Models.Enums
 @using PracProj.Extensions
+@using System.Text;
 
 <PageTitle>Просмотр и анализ событий доступа</PageTitle>
 
@@ -8,6 +10,139 @@
 
 <hr />
 
-@code {
+<div>
+    <input type="text" @bind="searchQuery" placeholder="Поиск..." class="form-control mb-3" />
 
+    <!-- Кнопка для выполнения поиска -->
+    <button @onclick="PerformSearch" class="btn btn-primary mb-3">Найти</button>
+
+    <div class="list-group">
+        @foreach (var item in FilteredItems)
+        {
+            <a href="#" class="list-group-item list-group-item-action">
+                <div class="d-flex w-100 justify-content-between">
+                    <p class="badge rounded-pill @GetBadgeClass(item.Status)">
+                        @item.Status.GetDisplayName()
+                    </p>
+                    <small class="text-muted">@item.Timestamp.ToLongDateString()</small>
+                </div>
+                <h5 class="mb-1">@item.AccessType.GetDisplayName()</h5>
+                <h6 class="mb-1">@item.LicensePlate</h6>
+                @* <small class="text-muted">@item.Details</small> *@
+            </a>
+        }
+    </div>
+</div>
+
+@code {
+    private string searchQuery = string.Empty;
+
+    // Пример данных
+    private IEnumerable<ViewAccessEvents> items = null!;
+
+    private IEnumerable<ViewAccessEvents> FilteredItems { get; set; } = null!;
+
+    // Инициализация FilteredItems
+    protected override void OnInitialized()
+    {
+        items = GetViewAccessEvents();
+        FilteredItems = items; // Инициализируем данными
+    }
+
+    private IEnumerable<ViewAccessEvents> GetViewAccessEvents() 
+    {
+        return new List<ViewAccessEvents>()
+        {
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow,
+                AccessType = Models.Enums.AccessType.Entry,
+                Status = Models.Enums.AccessStatus.Granted,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddHours(-3),
+                AccessType = Models.Enums.AccessType.Entry,
+                Status = Models.Enums.AccessStatus.Denied,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddHours(-2),
+                AccessType = Models.Enums.AccessType.Exit,
+                Status = Models.Enums.AccessStatus.Granted,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddHours(-1),
+                AccessType = Models.Enums.AccessType.Entry,
+                Status = Models.Enums.AccessStatus.Denied,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddMinutes(-22),
+                AccessType = Models.Enums.AccessType.Exit,
+                Status = Models.Enums.AccessStatus.Granted,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddMinutes(-12),
+                AccessType = Models.Enums.AccessType.Exit,
+                Status = Models.Enums.AccessStatus.Granted,
+                LicensePlate = RandPlate()
+            },
+            new ViewAccessEvents() {
+                Timestamp = DateTime.UtcNow.AddMinutes(-45),
+                AccessType = Models.Enums.AccessType.Entry,
+                Status = Models.Enums.AccessStatus.Granted,
+                LicensePlate = RandPlate()
+            }
+        };
+    }
+
+    // Метод для выполнения поиска
+    private void PerformSearch()
+    {
+        FilteredItems = items
+            .Where(item => string.IsNullOrEmpty(searchQuery) || item.AccessType.GetDisplayName().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                           item.Timestamp.ToLongDateString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                           item.Status.GetDisplayName().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
+                           item.LicensePlate.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .ToList();
+    }
+
+    private string GetBadgeClass(AccessStatus status)
+    {
+        return status switch
+        {
+            AccessStatus.Granted => "bg-success",
+            AccessStatus.Denied => "bg-danger",
+            _ => "bg-secondary"
+        };
+    }
+
+    private string RandPlate()
+    {
+        var rand = new Random();
+        var chars = new char[] { 'А', 'В', 'С', 'О', 'Р', 'Е', 'Т', 'Н', 'К', 'Х', 'М' };
+
+        StringBuilder plate = new StringBuilder();
+
+        // Добавляем первый символ X
+        plate.Append(chars[rand.Next(chars.Length)]);
+
+        // Добавляем три цифры Y
+        for (int i = 0; i < 3; i++)
+        {
+            plate.Append(rand.Next(0, 10)); // Генерация случайной цифры от 0 до 9
+        }
+
+        // Добавляем последние два символа X
+        for (int i = 0; i < 2; i++)
+        {
+            plate.Append(chars[rand.Next(chars.Length)]);
+        }
+
+        plate.Append(" 30 RUS");
+
+        return plate.ToString();
+    }
 }
