@@ -123,3 +123,44 @@ code {
     .nav-link .bi {
         margin-right: 8px; /* Отступ для текста от иконки */
     }
+
+.filterMenu {
+    position: sticky;
+    top: 0;
+    background-color: white;
+    z-index: 1000;
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.list-group-container {
+    max-height: 500px; /* Задайте нужную высоту контейнера */
+    overflow-y: auto;
+    margin-top: 10px;
+}
+
+.card-tight {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 0.25rem;
+}
+
+.card-no-radius {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    border-radius: 0 !important;
+}
+
+.card-top-no-radius {
+    border-top-left-radius: 0.25rem;
+    border-top-right-radius: 0.25rem;
+    border-bottom-left-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.card-bottom-no-radius {
+    border-top-left-radius: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+}

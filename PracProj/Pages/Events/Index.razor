@@ -1,8 +1,9 @@
 ﻿@page "/viewevents"
-@using PracProj.Models
+@using PracProj.Models.Events
 @using PracProj.Models.Enums
 @using PracProj.Extensions
-@using System.Text;
+@using System.Text
+@using System.Globalization
 
 <PageTitle>Просмотр и анализ событий доступа</PageTitle>
 
@@ -10,25 +11,59 @@
 
 <hr />
 
-<div>
-    <input type="text" @bind="searchQuery" placeholder="Поиск..." class="form-control mb-3" />
+<div class="filterMenu sticky-top">
+    <!-- Поля для фильтров -->
+    <div class="mb-3">
+        <label>Фильтр по типу события:</label>
+        <select @bind="selectedAccessType" class="form-select">
+            <option value="">Все</option>
+            @foreach (var type in Enum.GetValues(typeof(AccessType)))
+            {
+                <option value="@type">@((AccessType)type)</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Фильтр по статусу доступа:</label>
+        <select @bind="selectedAccessStatus" class="form-select">
+            <option value="">Все</option>
+            @foreach (var status in Enum.GetValues(typeof(AccessStatus)))
+            {
+                <option value="@status">@((AccessStatus)status)</option>
+            }
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Фильтр по времени (начальная и конечная дата):</label>
+        <div class="d-flex">
+            <input type="date" @bind="startDate" class="form-control me-2" placeholder="Начальная дата" />
+            <input type="date" @bind="endDate" class="form-control" placeholder="Конечная дата" />
+        </div>
+    </div>
+
+    <input type="text" @bind="searchQuery" placeholder="Поиск по номеру машины..." class="form-control mb-3" />
 
     <!-- Кнопка для выполнения поиска -->
-    <button @onclick="PerformSearch" class="btn btn-primary mb-3">Найти</button>
+    <button @onclick="PerformSearch" class="btn btn-primary mb-3">Применить фильтры</button>
+    <button @onclick="ClearPerformSearch" class="btn btn-primary mb-3">Сбросить фильтры</button>
+</div>
 
+<!-- Прокручиваемый контейнер для списка -->
+<div class="list-group-container">
     <div class="list-group">
         @foreach (var item in FilteredItems)
         {
-            <a href="#" class="list-group-item list-group-item-action">
+            <a href="/viewevents-details/mock" class="list-group-item list-group-item-action">
                 <div class="d-flex w-100 justify-content-between">
                     <p class="badge rounded-pill @GetBadgeClass(item.Status)">
                         @item.Status.GetDisplayName()
                     </p>
-                    <small class="text-muted">@item.Timestamp.ToLongDateString()</small>
+                    <small class="text-muted">@item.Timestamp.ToString("g", CultureInfo.CurrentCulture)</small>
                 </div>
                 <h5 class="mb-1">@item.AccessType.GetDisplayName()</h5>
                 <h6 class="mb-1">@item.LicensePlate</h6>
-                @* <small class="text-muted">@item.Details</small> *@
             </a>
         }
     </div>
@@ -36,6 +71,10 @@
 
 @code {
     private string searchQuery = string.Empty;
+    private string selectedAccessType = string.Empty;
+    private string selectedAccessStatus = string.Empty;
+    private DateTime? startDate;
+    private DateTime? endDate;
 
     // Пример данных
     private IEnumerable<ViewAccessEvents> items = null!;
@@ -102,11 +141,24 @@
     private void PerformSearch()
     {
         FilteredItems = items
-            .Where(item => string.IsNullOrEmpty(searchQuery) || item.AccessType.GetDisplayName().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                           item.Timestamp.ToLongDateString().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                           item.Status.GetDisplayName().Contains(searchQuery, StringComparison.OrdinalIgnoreCase) ||
-                           item.LicensePlate.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            .Where(item =>
+                (string.IsNullOrEmpty(selectedAccessType) || item.AccessType.ToString() == selectedAccessType) &&
+                (string.IsNullOrEmpty(selectedAccessStatus) || item.Status.ToString() == selectedAccessStatus) &&
+                (!startDate.HasValue || item.Timestamp.Date >= startDate.Value.Date) &&
+                (!endDate.HasValue || item.Timestamp.Date <= endDate.Value.Date) &&
+                (string.IsNullOrEmpty(searchQuery) || item.LicensePlate.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
+            )
             .ToList();
+    }
+
+    private void ClearPerformSearch() 
+    {
+        startDate = default;
+        endDate = default;
+        searchQuery = string.Empty;
+        selectedAccessStatus = string.Empty;
+        selectedAccessType = string.Empty;
+        FilteredItems = items;
     }
 
     private string GetBadgeClass(AccessStatus status)
