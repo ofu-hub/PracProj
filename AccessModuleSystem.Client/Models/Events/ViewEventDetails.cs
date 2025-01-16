@@ -1,6 +1,6 @@
-﻿using PracProj.Models.Enums;
+﻿using AccessModuleSystem.Client.Models.Enums;
 
-namespace PracProj.Models.Events;
+namespace AccessModuleSystem.Client.Models.Events;
 
 /// <summary>
 /// Модель для отображения подробной информации о событии доступа

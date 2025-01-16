@@ -1,6 +1,6 @@
-﻿using PracProj.Models.Enums;
+﻿using AccessModuleSystem.Client.Models.Enums;
 
-namespace PracProj.Models;
+namespace AccessModuleSystem.Client.Models;
 
 /// <summary>
 /// Камеры на территории жилого комплекса

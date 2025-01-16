@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
-using PracProj;
+using AccessModuleSystem.Client;
 
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 

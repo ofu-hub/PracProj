@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Reflection;
 
-namespace PracProj.Extensions;
+namespace AccessModuleSystem.Client.Extensions;
 
 public static class EnumExtensions
 {

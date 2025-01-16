@@ -1,6 +1,6 @@
-﻿using PracProj.Models.Enums;
+﻿using AccessModuleSystem.Client.Models.Enums;
 
-namespace PracProj.Models.Events;
+namespace AccessModuleSystem.Client.Models.Events;
 
 /// <summary>
 /// Модель представления въезда или выезда с территории

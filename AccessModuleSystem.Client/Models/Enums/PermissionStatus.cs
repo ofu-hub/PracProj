@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace PracProj.Models.Enums;
+namespace AccessModuleSystem.Client.Models.Enums;
 
 /// <summary>
 /// Статус разрешения

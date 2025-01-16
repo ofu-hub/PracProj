@@ -1,6 +1,6 @@
-﻿using PracProj.Models.Enums;
+﻿using AccessModuleSystem.Client.Models.Enums;
 
-namespace PracProj.Models;
+namespace AccessModuleSystem.Client.Models;
 
 /// <summary>
 /// Транспортные средства, зарегистрированные в системе
