@@ -150,7 +150,7 @@
     private void CountEvents()
     {
         for (var i = 0; i < accessEventsList.Count; i++) {
-            var nameEnum = Enum.GetName(typeof(PracProj.Models.Enums.AccessType), (int)accessEventsList[i].AccessType)!;
+            var nameEnum = Enum.GetName(typeof(AccessModuleSystem.Client.Models.Enums.AccessType), (int)accessEventsList[i].AccessType)!;
 
             if (countEvents.ContainsKey(accessEventsList[i].AccessType.ToString()))
                 countEvents[nameEnum]++;
