@@ -34,10 +34,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
 
 var jwtOptionsSection = builder.Configuration.GetSection(nameof(JwtOptions));
-var jwtOptions = jwtOptionsSection.Get<JwtOptions>();
+var jwtOptions = jwtOptionsSection.Get<JwtOptions>() ?? throw new InvalidOperationException("JWT options are not configured properly.");
 
 builder.Services.AddOptions<JwtOptions>().Bind(jwtOptionsSection);
-builder.Services.AddScoped(cfg => cfg.GetService<IOptions<JwtOptions>>()?.Value);
+builder.Services.AddScoped<JwtOptions>(cfg => cfg.GetService<IOptions<JwtOptions>>()?.Value ?? throw new InvalidOperationException("Scoped is not ready. JWT options are not configured properly."));
 
 builder.Services.AddSingleton<JwtHelper>();
 
@@ -45,7 +45,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(opts =>
     {
       byte[] signingKeyBytes = Encoding.UTF8
-          .GetBytes(jwtOptions.Key);
+          .GetBytes(jwtOptions.Key ?? throw new InvalidOperationException("JWT key is not configured."));
 
       opts.TokenValidationParameters = new TokenValidationParameters
       {

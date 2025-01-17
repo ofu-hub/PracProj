@@ -1,7 +1,24 @@
 ﻿@page "/"
+@using System.Security.Claims
+@attribute [Authorize]
 
-<PageTitle>Home</PageTitle>
+@inject AuthenticationStateProvider AuthStateProvider
 
-<h1>Hello, world!</h1>
+<PageTitle>Домашняя страница</PageTitle>
 
-Welcome to your new app.
+<h1>Приветствую Вас, @fullname!</h1>
+
+@code {
+    private string? fullname;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Получение состояния аутентификации
+        var authState = await AuthStateProvider.GetAuthenticationStateAsync();
+        var t = authState.User.Claims.Select(x => x.Type).ToList();
+        foreach (var s in t) {
+            Console.WriteLine(s);
+        }
+        fullname = $"{authState.User.FindFirst("unique_name")?.Value} {authState.User.FindFirst("family_name")?.Value}";
+    }
+}

@@ -164,3 +164,24 @@ code {
     border-bottom-left-radius: 0.25rem;
     border-bottom-right-radius: 0.25rem;
 }
+
+.nav-scrollable {
+    display: flex;
+    flex-direction: column;
+    height: 100vh; /* Занимает всю высоту окна */
+}
+
+    .nav-scrollable nav {
+        display: flex;
+        flex-direction: column;
+        flex-grow: 1;
+    }
+
+    .nav-scrollable .nav-item:last-child {
+        margin-top: auto; /* Размещает LogOut внизу */
+    }
+
+.nav-link {
+    line-height: 1rem !important;
+}
+

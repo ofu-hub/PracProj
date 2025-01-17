@@ -1,4 +1,9 @@
-﻿<div class="top-row ps-3 navbar navbar-dark">
+﻿@using AccessModuleSystem.Client.Providers
+
+@inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">PracProj</a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
@@ -7,40 +12,62 @@
     </div>
 </div>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="flex-column">
+<div class="@NavMenuCssClass nav-scrollable d-flex flex-column" @onclick="ToggleNavMenu">
+    <nav class="flex-column flex-grow-1 d-flex">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="dashboard">
-                <span class="bi bi-speedometer" aria-hidden="true"></span> Dashboard
+                <span class="bi bi-speedometer" aria-hidden="true"></span> Панель инструментов
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="users">
-                <span class="bi bi-people-fill" aria-hidden="true"></span> Users
+                <span class="bi bi-people-fill" aria-hidden="true"></span> Пользователи
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="vehicles">
-                <span class="bi bi-car-front-fill" aria-hidden="true"></span> Vehicles
+                <span class="bi bi-car-front-fill" aria-hidden="true"></span> Транспортные средства
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="viewevents">
-                <span class="bi bi-calendar2-event" aria-hidden="true"></span> View events
+                <span class="bi bi-calendar2-event" aria-hidden="true"></span> Посмотреть события
             </NavLink>
         </div>
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="cameracontrol">
-                <span class="bi bi-camera-video-fill" aria-hidden="true"></span> Camera control
+                <span class="bi bi-camera-video-fill" aria-hidden="true"></span> Управление камерами
+            </NavLink>
+        </div>
+
+        <!-- ЛогАут -->
+        <div class="nav-item px-3 mt-auto">
+            <NavLink class="nav-link" href="logout">
+                <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Class="w-100" @onclick="LogOut">
+                    <Icon Name="IconName.ArrowLeftSquareFill" /> Выйти
+                </Button>
             </NavLink>
         </div>
     </nav>
 </div>
 
+
 @code {
     private bool collapseNavMenu = true;
 
     private string? NavMenuCssClass => collapseNavMenu ? "collapse" : null;
+
+    private async Task LogOut()
+    {
+        // Уведомляем провайдер об изменении состояния
+        if (AuthenticationStateProvider is CustomAuthenticationStateProvider customProvider)
+        {
+            await customProvider.SignOutAsync();
+
+            // Перенаправление на страницу логина
+            NavigationManager.NavigateTo("login");
+        }
+    }
 
     private void ToggleNavMenu()
     {

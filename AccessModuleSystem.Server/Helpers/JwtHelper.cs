@@ -1,5 +1,6 @@
 ﻿using AccessModuleSystem.Models;
 using AccessModuleSystem.Server.Options;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
@@ -73,29 +74,34 @@ public class JwtHelper
   /// <param name="minutesValid">Время действия токена</param>
   /// <returns>Токен доступа</returns>
   public string CreateAccessToken(User user, int minutesValid)
-  {
-    var subject = new ClaimsIdentity(new[]
+{
+    var claims = new[]
     {
-            new Claim(ClaimsIdentity.DefaultIssuer, user.Id.ToString()),
-            new Claim(ClaimsIdentity.DefaultNameClaimType, user.Username),
-            new Claim(ClaimsIdentity.DefaultRoleClaimType, user.Role.ToString()),
-        });
+        new Claim(ClaimTypes.Name, user.Name),
+        new Claim(ClaimTypes.Surname, user.Surname),
+        new Claim(ClaimTypes.Email, user.Email),
+        new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
+        new Claim(ClaimTypes.Role, user.Role.ToString())
+    };
 
     var tokenDescriptor = new SecurityTokenDescriptor
     {
-      Issuer = _jwtOptions.Value.Issuer,
-      Audience = _jwtOptions.Value.Audience,
-      IssuedAt = DateTime.UtcNow,
-      NotBefore = DateTime.UtcNow,
-      Expires = DateTime.UtcNow.AddMinutes(minutesValid),
-      Subject = subject,
-      SigningCredentials = new SigningCredentials(_jwtOptions.Value.GetSymmetricSecurityKey(), SecurityAlgorithms.HmacSha256Signature)
+        Issuer = _jwtOptions.Value.Issuer,
+        Audience = _jwtOptions.Value.Audience,
+        IssuedAt = DateTime.UtcNow,
+        NotBefore = DateTime.UtcNow,
+        Expires = DateTime.UtcNow.AddMinutes(minutesValid),
+        Subject = new ClaimsIdentity(claims), // Используем ClaimsIdentity
+        SigningCredentials = new SigningCredentials(
+            _jwtOptions.Value.GetSymmetricSecurityKey(),
+            SecurityAlgorithms.HmacSha256Signature
+        )
     };
 
     var tokenHandler = new JwtSecurityTokenHandler();
     var token = tokenHandler.CreateToken(tokenDescriptor);
     return tokenHandler.WriteToken(token);
-  }
+}
 
   /// <summary>
   /// Создать токен обновления

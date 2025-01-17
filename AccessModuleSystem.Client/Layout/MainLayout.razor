@@ -1,19 +1,40 @@
 ﻿@inherits LayoutComponentBase
-<div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+@using Microsoft.AspNetCore.Components.Authorization
 
-    <main>
-        @* todo: Auth state *@
-        <div class="top-row px-4">
-            <Button Color="ButtonColor.Danger"> 
-                Выйти <Icon Name="IconName.LayerBackward"></Icon>
-            </Button>
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@* Показываем NavMenu только для авторизованных пользователей *@
+@if (isAuthenticated)
+{
+    <div class="page">
+        <div class="sidebar">
+            <NavMenu />
         </div>
 
-        <article class="content px-4">
-            @Body
-        </article>
-    </main>
-</div>
+        <main>
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+else {
+    <div class="page">
+        <main role="main" class="pb-3">
+            <article class="content px-4">
+                @Body
+            </article>
+        </main>
+    </div>
+}
+
+@code {
+    private bool isAuthenticated;
+
+    protected override async Task OnInitializedAsync()
+    {
+        // Получаем состояние авторизации
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        isAuthenticated = authenticationState.User?.Identity?.IsAuthenticated ?? false;
+    }
+}

@@ -2,9 +2,9 @@
 @using AccessModuleSystem.Client.Models.Events
 @using AccessModuleSystem.Client.Models.Enums
 @using AccessModuleSystem.Client.Extensions
+@attribute [Authorize]
 
 <PageTitle>Детали события доступа</PageTitle>
-
 
 @if (eventDetails == null)
 {

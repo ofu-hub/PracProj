@@ -39,6 +39,10 @@ public class DatabaseContext : DbContext
       entity.HasKey(e => e.Id);
 
       entity.Property(e => e.Username).IsRequired();
+      entity.Property(e => e.Name).IsRequired();
+      entity.Property(e => e.Surname).IsRequired();
+      entity.Property(e => e.Patronymic).IsRequired(false);
+      entity.Property(e => e.Email).IsRequired();
       entity.Property(e => e.Role).IsRequired();
       entity.Property(e => e.PasswordHash).IsRequired();
       entity.Property(e => e.CreatedAt).IsRequired();
@@ -53,6 +57,9 @@ public class DatabaseContext : DbContext
           CreatedAt = DateTime.SpecifyKind(DateTime.Parse("2023-06-15T20:37:19.000000Z"), DateTimeKind.Utc),
           Role = UserRole.Admin,
           Username = "admin",
+          Email = "admin@ams.ru",
+          Name = "Павел",
+          Surname = "Маркелов",
           PasswordHash = "admin",
         },
         new User
@@ -61,6 +68,9 @@ public class DatabaseContext : DbContext
           CreatedAt = DateTime.SpecifyKind(DateTime.Parse("2023-05-15T20:37:19.000000Z"), DateTimeKind.Utc),
           Role = UserRole.User,
           Username = "user",
+          Email = "user@ams.ru",
+          Name = "Иван",
+          Surname = "Иванов",
           PasswordHash = "user"
         }
       );
