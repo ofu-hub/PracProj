@@ -8,11 +8,17 @@
   
   <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.Authorization" Version="8.0.12" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="8.0.11" />
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="8.0.11" PrivateAssets="all" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.1" />
     <PackageReference Include="PSC.Blazor.Components.Chartjs" Version="8.0.8" />
     <PackageReference Include="PSC.Blazor.Components.DataTable" Version="6.0.13" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\AccessModuleSystem.Contracts\AccessModuleSystem.Contracts.csproj" />
   </ItemGroup>
 
 </Project>

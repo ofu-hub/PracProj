@@ -7,6 +7,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessModuleSystem.Server",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessModuleSystem.Client", "AccessModuleSystem.Client\AccessModuleSystem.Client.csproj", "{EAB80E75-4516-4176-8B39-4B6580BA2598}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessModuleSystem.Models", "AccessModuleSystem.Models\AccessModuleSystem.Models.csproj", "{6F9D42EE-3C5F-4DFE-B82C-6C65CE938572}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AccessModuleSystem.Contracts", "AccessModuleSystem.Contracts\AccessModuleSystem.Contracts.csproj", "{8503F086-4CA4-4BD8-AB74-E20EC8CD63A4}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +25,14 @@ Global
 		{EAB80E75-4516-4176-8B39-4B6580BA2598}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EAB80E75-4516-4176-8B39-4B6580BA2598}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EAB80E75-4516-4176-8B39-4B6580BA2598}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F9D42EE-3C5F-4DFE-B82C-6C65CE938572}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F9D42EE-3C5F-4DFE-B82C-6C65CE938572}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F9D42EE-3C5F-4DFE-B82C-6C65CE938572}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F9D42EE-3C5F-4DFE-B82C-6C65CE938572}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8503F086-4CA4-4BD8-AB74-E20EC8CD63A4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8503F086-4CA4-4BD8-AB74-E20EC8CD63A4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8503F086-4CA4-4BD8-AB74-E20EC8CD63A4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8503F086-4CA4-4BD8-AB74-E20EC8CD63A4}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

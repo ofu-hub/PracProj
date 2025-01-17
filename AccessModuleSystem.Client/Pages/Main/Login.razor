@@ -1,3 +1,73 @@
 ﻿@page "/login"
 
-<PageTitle>Вход в систему</PageTitle>
+@using System.Net.Http
+@using System.Text.Json
+@using AccessModuleSystem.Contracts.Auth;
+
+@inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
+
+<PageTitle>Авторизация</PageTitle>
+
+<h3>Авторизация</h3>
+
+@if (isError)
+{
+    <div class="alert alert-danger" role="alert">
+        Неверный логин или пароль.
+    </div>
+}
+
+<EditForm Model="@loginModel" OnValidSubmit="@HandleLoginSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
+    <div class="form-group">
+        <label for="username">Логин</label>
+        <InputText id="username" class="form-control" @bind-Value="loginModel.Username" />
+    </div>
+
+    <div class="form-group">
+        <label for="password">Пароль</label>
+        <InputText type="password" id="password" class="form-control" @bind-Value="loginModel.Password" placeholder="Пароль" />
+    </div>
+
+    <button type="submit" class="btn btn-primary">Войти</button>
+</EditForm>
+
+@code {
+    private LoginDto loginModel = new LoginDto();
+    private bool isError = false;
+
+    private async Task HandleLoginSubmit()
+    {
+        try
+        {
+            var loginData = new AuthDto
+            {
+                Username = loginModel.Username,
+                Password = loginModel.Password
+            };
+
+            // Отправка данных на сервер для авторизации
+            var response = await HttpClient.PostAsJsonAsync("api/auth", loginData);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var loginResult = await response.Content.ReadFromJsonAsync<LoginResultDto>();
+
+                // Успешная авторизация, переход на защищенную страницу
+                NavigationManager.NavigateTo("/home");
+            }
+            else
+            {
+                isError = true; // Ошибка авторизации
+            }
+        }
+        catch (Exception ex)
+        {
+            isError = true; // Ошибка соединения
+            Console.WriteLine($"Ошибка: {ex.Message}");
+        }
+    }
+}
