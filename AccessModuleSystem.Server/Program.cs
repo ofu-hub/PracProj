@@ -1,6 +1,5 @@
 using AccessModuleSystem.Server;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Components.WebAssembly;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +39,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseBlazorFrameworkFiles(); // Для обслуживания Blazor WebAssembly
 app.UseStaticFiles(); // Для обслуживания статики
 
 app.UseRouting();
