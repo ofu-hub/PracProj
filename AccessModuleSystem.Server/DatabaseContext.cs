@@ -47,6 +47,7 @@ public class DatabaseContext : DbContext
       entity.Property(e => e.Patronymic).IsRequired(false);
       entity.Property(e => e.Email).IsRequired();
       entity.Property(e => e.Role).IsRequired();
+      entity.Property(e => e.IsBlocked).IsRequired();
       entity.Property(e => e.PasswordHash).IsRequired();
       entity.Property(e => e.CreatedAt).IsRequired();
 

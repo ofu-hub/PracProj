@@ -24,4 +24,9 @@ public class UserUpdateDTO
   /// Почтовый электронный адрес
   /// </summary>
   public string Email { get; set; } = string.Empty;
+
+  /// <summary>
+  /// Заблокирован
+  /// </summary>
+  public bool IsBlocked { get; set; }
 }

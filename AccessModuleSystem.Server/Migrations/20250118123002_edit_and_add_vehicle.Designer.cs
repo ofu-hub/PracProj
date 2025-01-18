@@ -3,6 +3,7 @@ using System;
 using AccessModuleSystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccessModuleSystem.Server.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250118123002_edit_and_add_vehicle")]
+    partial class edit_and_add_vehicle
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -83,9 +86,6 @@ namespace AccessModuleSystem.Server.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsBlocked")
-                        .HasColumnType("boolean");
-
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("text");
@@ -130,7 +130,6 @@ namespace AccessModuleSystem.Server.Migrations
                             Id = new Guid("d1b0f2cc-79b3-4b69-928c-8b263f2ab9c4"),
                             CreatedAt = new DateTime(2023, 6, 16, 0, 37, 19, 0, DateTimeKind.Utc),
                             Email = "admin@ams.ru",
-                            IsBlocked = false,
                             Name = "Павел",
                             PasswordHash = "admin",
                             Role = 0,
@@ -142,7 +141,6 @@ namespace AccessModuleSystem.Server.Migrations
                             Id = new Guid("d1b0f4cc-79b3-4b69-988c-8b263f2ab9c4"),
                             CreatedAt = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc),
                             Email = "user@ams.ru",
-                            IsBlocked = false,
                             Name = "Иван",
                             PasswordHash = "user",
                             Role = 1,

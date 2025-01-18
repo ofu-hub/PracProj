@@ -1,5 +1,7 @@
 ﻿@page "/login"
 
+<PageTitle>Авторизация</PageTitle>
+
 @using AccessModuleSystem.Client.Providers
 @using AccessModuleSystem.Client.Services
 @using AccessModuleSystem.Contracts.Auth
@@ -60,7 +62,7 @@
                     customProvider.StateChanged();
                 }
 
-                NavigationManager.NavigateTo("/");
+                NavigationManager.NavigateTo("/", true);
             }
             else
             {

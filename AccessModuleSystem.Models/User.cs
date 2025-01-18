@@ -48,6 +48,11 @@ public class User
   public UserRole Role {  get; set; }
 
   /// <summary>
+  /// Заблокирован
+  /// </summary>
+  public bool IsBlocked { get; set; } = false;
+
+  /// <summary>
   /// Дата регистрации
   /// </summary>
   public DateTime CreatedAt { get; set; }

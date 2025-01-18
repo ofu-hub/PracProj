@@ -46,4 +46,9 @@ public class UserReadDTO
   /// Дата регистрации
   /// </summary>
   public DateTime CreatedAt { get; set; }
+
+  /// <summary>
+  /// Заблокирован
+  /// </summary>
+  public bool IsBlocked { get; set; }
 }

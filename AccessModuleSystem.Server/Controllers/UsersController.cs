@@ -43,7 +43,8 @@ public class UsersController : ControllerBase
           Patronymic = user.Patronymic,
           Email = user.Email,
           Role = user.Role,
-          CreatedAt = user.CreatedAt
+          CreatedAt = user.CreatedAt,
+          IsBlocked = user.IsBlocked
         })
         .ToListAsync();
 
@@ -74,7 +75,8 @@ public class UsersController : ControllerBase
       Patronymic = user.Patronymic,
       Email = user.Email,
       Role = user.Role,
-      CreatedAt = user.CreatedAt
+      CreatedAt = user.CreatedAt,
+      IsBlocked = user.IsBlocked
     });
   }
 
@@ -96,7 +98,8 @@ public class UsersController : ControllerBase
       Email = userCreateDTO.Email,
       PasswordHash = HashPassword(userCreateDTO.Password), // Предполагается наличие метода хеширования
       Role = userCreateDTO.Role,
-      CreatedAt = DateTime.UtcNow
+      CreatedAt = DateTime.UtcNow,
+      IsBlocked = false
     };
 
     _context.Users.Add(user);
@@ -111,7 +114,8 @@ public class UsersController : ControllerBase
       Patronymic = user.Patronymic,
       Email = user.Email,
       Role = user.Role,
-      CreatedAt = user.CreatedAt
+      CreatedAt = user.CreatedAt,
+      IsBlocked = user.IsBlocked
     });
   }
 
@@ -135,6 +139,7 @@ public class UsersController : ControllerBase
     user.Surname = userUpdateDTO.Surname;
     user.Patronymic = userUpdateDTO.Patronymic;
     user.Email = userUpdateDTO.Email;
+    user.IsBlocked = userUpdateDTO.IsBlocked;
 
     _context.Entry(user).State = EntityState.Modified;
     await _context.SaveChangesAsync();
