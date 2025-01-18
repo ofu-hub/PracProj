@@ -1,109 +1,147 @@
-﻿@page "/viewevents-details/mock"
-@using AccessModuleSystem.Client.Models.Events
-@using AccessModuleSystem.Client.Models.Enums
+﻿@page "/viewevents-details/{id:Guid}"
+@using AccessModuleSystem.Models.Enums
+@using AccessModuleSystem.Contracts.AccessEvent
 @using AccessModuleSystem.Client.Extensions
+@using System.Globalization
+
+@inject HttpClient HttpClient
+
 @attribute [Authorize]
 
 <PageTitle>Детали события доступа</PageTitle>
 
-@if (eventDetails == null)
+@if (isLoading)
 {
-    <p>Загрузка данных...</p>
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Идет загрузка, пожалуйста, подождите...</span>
+        </div>
+    </div>
 }
 else
 {
-    <h1>Детали события доступа №@eventDetails.EventId</h1>
+    if (eventDetails is not null)
+    {
+        <h1>Детали события доступа №@eventDetails.Id</h1>
 
-    <hr />
-    <div class="card card-tight mb-1 card-top-no-radius">
-        <div class="card-header">
-            <h4>Информация о событии</h4>
+        <hr />
+        <div class="card card-tight mb-1 card-top-no-radius">
+            <div class="card-header">
+                <h4>Информация о событии</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-2">Тип события:</dt>
+                    <dd class="col-sm-10">@eventDetails.AccessType.GetDisplayName()</dd>
+
+                    <dt class="col-sm-2">Статус доступа:</dt>
+                    <dd class="col-sm-10">@eventDetails.Status.GetDisplayName()</dd>
+
+                    <dt class="col-sm-2">Время события:</dt>
+                    <dd class="col-sm-10">@eventDetails.Timestamp.ToString()</dd>
+                </dl>
+            </div>
         </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-2">Тип события:</dt>
-                <dd class="col-sm-10">@eventDetails.AccessType.GetDisplayName()</dd>
 
-                <dt class="col-sm-2">Статус доступа:</dt>
-                <dd class="col-sm-10">@eventDetails.AccessStatus.GetDisplayName()</dd>
+        <div class="card card-tight mb-1 card-no-radius">
+            <div class="card-header">
+                <h4>Информация о транспортном средстве</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-2">Номерной знак:</dt>
+                    <dd class="col-sm-10">@eventDetails.Vehicle.LicensePlate</dd>
 
-                <dt class="col-sm-2">Время события:</dt>
-                <dd class="col-sm-10">@eventDetails.Timestamp.ToString("f")</dd>
-            </dl>
+                    <dt class="col-sm-2">Владелец:</dt>
+                    <dd class="col-sm-10">@eventDetails.Vehicle.OwnerName</dd>
+
+                    <dt class="col-sm-2">Статус разрешения:</dt>
+                    <dd class="col-sm-10">@eventDetails.Vehicle.Status.GetDisplayName()</dd>
+
+                    <dt class="col-sm-2">Дата добавления:</dt>
+                    <dd class="col-sm-10">@eventDetails.Vehicle.CreatedAt.ToString()</dd>
+                </dl>
+            </div>
         </div>
-    </div>
 
-    <div class="card card-tight mb-1 card-no-radius">
-        <div class="card-header">
-            <h4>Информация о транспортном средстве</h4>
+        <div class="card card-tight mb-1 card-bottom-no-radius">
+            <div class="card-header">
+                <h4>Информация о камере</h4>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-2">Местоположение:</dt>
+                    <dd class="col-sm-10">@eventDetails.Camera.Location</dd>
+
+                    <dt class="col-sm-2">Статус:</dt>
+                    <dd class="col-sm-10">@eventDetails.Camera.Status.GetDisplayName()</dd>
+
+                    <dt class="col-sm-2">Снимок с камеры:</dt>
+                    <dd class="col-sm-10">
+                        <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
+                            <title>Placeholder</title>
+                            <rect width="100%" height="100%" fill="#868e96"></rect>
+                            <text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text>
+                        </svg>
+                    </dd>
+                </dl>
+            </div>
         </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-2">Номерной знак:</dt>
-                <dd class="col-sm-10">@eventDetails.LicensePlate</dd>
-
-                <dt class="col-sm-2">Владелец:</dt>
-                <dd class="col-sm-10">@eventDetails.OwnerName</dd>
-
-                <dt class="col-sm-2">Статус разрешения:</dt>
-                <dd class="col-sm-10">@eventDetails.VehicleStatus.GetDisplayName()</dd>
-
-                <dt class="col-sm-2">Дата добавления:</dt>
-                <dd class="col-sm-10">@eventDetails.VehicleCreatedAt.ToString("f")</dd>
-            </dl>
+    }
+    else
+    {
+        <div class="accessEvents justify-content-center align-content-center">
+            <h3>@errorMessage</h3>
         </div>
-    </div>
+    }
 
-    <div class="card card-tight mb-1 card-bottom-no-radius">
-        <div class="card-header">
-            <h4>Информация о камере</h4>
-        </div>
-        <div class="card-body">
-            <dl class="row">
-                <dt class="col-sm-2">Местоположение:</dt>
-                <dd class="col-sm-10">@eventDetails.CameraLocation</dd>
-
-                <dt class="col-sm-2">Статус:</dt>
-                <dd class="col-sm-10">@eventDetails.CameraStatus.GetDisplayName()</dd>
-
-                <dt class="col-sm-2">Снимок с камеры:</dt>
-                <dd class="col-sm-10">
-                    <svg class="bd-placeholder-img card-img-top" width="100%" height="180" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Placeholder: Image cap" preserveAspectRatio="xMidYMid slice" focusable="false">
-                        <title>Placeholder</title>
-                        <rect width="100%" height="100%" fill="#868e96"></rect>
-                        <text x="50%" y="50%" fill="#dee2e6" dy=".3em">Image cap</text>
-                    </svg>
-                </dd>
-            </dl>
-        </div>
-    </div>
-
-    @* todo: Navigate *@
     <a href="/viewevents" class="btn btn-primary mt-2">Назад</a>
 }
 
 @code {
-    private ViewEventDetails? eventDetails;
+    private bool isLoading = true;
+    private string errorMessage = "Ошибка при загрузке. Попробуйте обновить страницу :(";
 
-    protected override void OnInitialized()
+    [Parameter]
+    public string id { get; set; } = string.Empty;
+    private AccessEventDetailDTO? eventDetails;
+
+    protected override async Task OnParametersSetAsync()
     {
-        // Замоканные данные для отображения
-        eventDetails = new ViewEventDetails
+        try
+        {
+            if (Guid.TryParse(id, out var parsedId))
             {
-                EventId = Guid.NewGuid(),
-                Timestamp = DateTime.UtcNow,
-                AccessType = AccessType.Entry,
-                AccessStatus = AccessStatus.Granted,
-
-                VehicleId = Guid.NewGuid(),
-                LicensePlate = "А123ВС30 30 RUS",
-                OwnerName = "Иван Иванов",
-                VehicleStatus = PermissionStatus.Active,
-                VehicleCreatedAt = DateTime.UtcNow.AddDays(-2),
-
-                CameraId = Guid.NewGuid(),
-                CameraLocation = "Въезд на территорию",
-                CameraStatus = CameraStatus.Active
-            };
+                var response = await HttpClient.GetAsync($"api/AccessEvent/{parsedId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var result = await response.Content.ReadFromJsonAsync<AccessEventDetailDTO>();
+                    if (result != null)
+                    {
+                        eventDetails = result;
+                    }
+                    else
+                    {
+                        errorMessage = "Данные не найдены.";
+                    }
+                }
+                else
+                {
+                    errorMessage = $"Ошибка загрузки данных: {response.ReasonPhrase}";
+                }
+            }
+            else
+            {
+                errorMessage = "Неверный формат GUID.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла ошибка: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
     }
 }

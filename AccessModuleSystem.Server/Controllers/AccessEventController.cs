@@ -1,5 +1,6 @@
 ﻿using AccessModuleSystem.Contracts.AccessEvent;
-using AccessModuleSystem.Contracts.User;
+using AccessModuleSystem.Contracts.Camera;
+using AccessModuleSystem.Contracts.Vehicle;
 using AccessModuleSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -34,18 +35,20 @@ public class AccessEventController : Controller
   [HttpGet]
   public async Task<ActionResult<IEnumerable<AccessEventReadDTO>>> GetAccessEvents()
   {
-    var accessEvents = await _context.AccessEvents.Include(e => e.Vehicle).Include(x => x.Camera)
-        .Select(accessEvent => new AccessEventReadDTO
-        {
-          Id = accessEvent.Id,
-          AccessType = accessEvent.AccessType,
-          CameraId = accessEvent.CameraId,
-          LicensePlate = accessEvent.Vehicle.LicensePlate,
-          Status = accessEvent.Status,
-          Timestamp = accessEvent.Timestamp,
-          VehicleId = accessEvent.VehicleId
-        })
-        .ToListAsync();
+    var accessEvents = await _context.AccessEvents
+      .Include(e => e.Vehicle)
+      .Include(x => x.Camera)
+      .Select(accessEvent => new AccessEventReadDTO
+      {
+        Id = accessEvent.Id,
+        AccessType = accessEvent.AccessType,
+        CameraId = accessEvent.CameraId,
+        LicensePlate = accessEvent.Vehicle.LicensePlate,
+        Status = accessEvent.Status,
+        Timestamp = accessEvent.Timestamp,
+        VehicleId = accessEvent.VehicleId
+      })
+      .ToListAsync();
 
     return Ok(accessEvents);
   }
@@ -55,32 +58,48 @@ public class AccessEventController : Controller
   /// </summary>
   /// <param name="id"></param>
   /// <returns></returns>
-  [HttpGet("{id}")]
-  public async Task<ActionResult<AccessEventReadDTO>> GetAccessEvent(Guid id)
+  [HttpGet("{id:Guid}")]
+  public async Task<ActionResult<AccessEventDetailDTO>> GetAccessEvent(Guid id)
   {
-    var accessEvent = await _context.AccessEvents.Include(x => x.Vehicle).Include(x => x.Camera).FirstOrDefaultAsync(x => x.Id == id);
+    var accessEvent = await _context.AccessEvents
+      .Include(x => x.Vehicle)
+      .Include(x => x.Camera)
+      .FirstOrDefaultAsync(x => x.Id == id);
+
 
     if (accessEvent == null)
     {
       return NotFound();
     }
 
-    return Ok(new AccessEventReadDTO
+    return Ok(new AccessEventDetailDTO
     {
       Id = accessEvent.Id,
       AccessType = accessEvent.AccessType,
-      CameraId = accessEvent.CameraId,
-      LicensePlate = accessEvent.Vehicle.LicensePlate,
       Status = accessEvent.Status,
       Timestamp = accessEvent.Timestamp,
-      VehicleId = accessEvent.VehicleId
+      Camera = new CameraReadDTO()
+      {
+        Id = accessEvent.Camera.Id,
+        Location = accessEvent.Camera.Location,
+        Status = accessEvent.Camera.Status
+      },
+      Vehicle = new VehicleReadDTO()
+      {
+        Id = accessEvent.Vehicle.Id,
+        Status = accessEvent.Vehicle.Status,
+        CreatedAt = accessEvent.Vehicle.CreatedAt,
+        DeactivationAt = accessEvent.Vehicle.DeactivationAt,
+        LicensePlate = accessEvent.Vehicle.LicensePlate,
+        OwnerName = accessEvent.Vehicle.OwnerName
+      }
     });
   }
 
   /// <summary>
   /// Создать событие
   /// </summary>
-  /// <param name="userCreateDTO"></param>
+  /// <param name="accessEventCreateDTO"></param>
   /// <returns></returns>
   [HttpPost]
   public async Task<ActionResult<AccessEventReadDTO>> CreateAccessEvent(AccessEventCreateDTO accessEventCreateDTO)

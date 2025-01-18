@@ -12,91 +12,103 @@
 <h1>Главная панель управления</h1>
 
 <hr />
-
-@if (accessEventsList is not null) {
-    <div class="accessEvents">
-        <div class="pieChart">
-            <h3>Круговая диаграмма активности</h3>
-            <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Идет загрузка, пожалуйста, подождите...</span>
         </div>
-
-        <div class="dataTable">
-            <h3>Последние события доступа</h3>
-            <DataTable TModel="AccessEventReadDTO" Items="accessEventsList" AllowRowSelection="true"
-            SelectedItem="selectedItem" RowClickedEvent="SelectedItemCallBack" SelectedItemCssClass="bg-info">
-                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
-                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
-                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
-                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Время события" Property="(e) => e.Timestamp" />
-            </DataTable>
-            <div class="d-grid gap-2">
-                <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
-            </div>
-        </div>
-    </div>
-
-    <hr />
-
-    <div class="selectedViewItem">
-        <h3>Информация об выбранном событии</h3>
-        @if (selectedItem is null)
-        {
-            <p>Событие не выбрано. Выберите событие из таблицы "Последние события доступа"</p>
-        }
-        else
-        {
-            <Card Style="width:auto;">
-                <CardBody>
-                    <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
-                </CardBody>
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item">
-                        <strong>Транспорт</strong>
-                        <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Время события</strong>
-                        <p>@selectedItem.Timestamp</p>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Тип события</strong>
-                        <p>@selectedItem.AccessType.GetDisplayName()</p>
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Статус доступа</strong>
-                        <p>
-                            @if (selectedItem.Status is AccessStatus.Granted)
-                            {
-                                <Badge Color="BadgeColor.Success">Предоставленный</Badge>
-                            }
-                            else
-                            {
-                                <Badge Color="BadgeColor.Danger">Отклонен</Badge>
-                            }
-                        </p>
-
-                    </li>
-                    <li class="list-group-item">
-                        <strong>Камера фиксирующая</strong>
-                        <p>@selectedItem.CameraId</p>
-                    </li>
-                </ul>
-                <CardBody class="d-grid gap-2">
-                    <Button Color="ButtonColor.Primary"> Подробнее о событии </Button>
-                    <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
-                </CardBody>
-            </Card>
-        }
     </div>
 }
 else {
-    <div class="accessEvents justify-content-center align-content-center">
-        <h3>Список событий к сожалению пустой :(</h3>
-    </div>
+    @if (accessEventsList is not null)
+    {
+        <div class="accessEvents">
+            <div class="pieChart">
+                <h3>Круговая диаграмма активности</h3>
+                <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
+            </div>
+
+            <div class="dataTable">
+                <h3>Последние события доступа</h3>
+                <DataTable TModel="AccessEventReadDTO" Items="accessEventsList" AllowRowSelection="true"
+                SelectedItem="selectedItem" RowClickedEvent="SelectedItemCallBack" SelectedItemCssClass="bg-info">
+                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
+                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
+                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
+                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Время события" Property="(e) => e.Timestamp" />
+                </DataTable>
+                <div class="d-grid gap-2">
+                    <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
+                </div>
+            </div>
+        </div>
+
+        <hr />
+
+        <div class="selectedViewItem">
+            <h3>Информация об выбранном событии</h3>
+            @if (selectedItem is null)
+            {
+                <p>Событие не выбрано. Выберите событие из таблицы "Последние события доступа"</p>
+            }
+            else
+            {
+                <Card Style="width:auto;">
+                    <CardBody>
+                        <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
+                    </CardBody>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <strong>Транспорт</strong>
+                            <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Время события</strong>
+                            <p>@selectedItem.Timestamp</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Тип события</strong>
+                            <p>@selectedItem.AccessType.GetDisplayName()</p>
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Статус доступа</strong>
+                            <p>
+                                @if (selectedItem.Status is AccessStatus.Granted)
+                                {
+                                    <Badge Color="BadgeColor.Success">Предоставленный</Badge>
+                                }
+                                else
+                                {
+                                    <Badge Color="BadgeColor.Danger">Отклонен</Badge>
+                                }
+                            </p>
+
+                        </li>
+                        <li class="list-group-item">
+                            <strong>Камера фиксирующая</strong>
+                            <p>@selectedItem.CameraId</p>
+                        </li>
+                    </ul>
+                    <CardBody class="d-grid gap-2">
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To=@string.Format($"/viewevents-details/{selectedItem.Id.ToString()}")> Подробнее о событии </Button>
+                        <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
+                    </CardBody>
+                </Card>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="accessEvents justify-content-center align-content-center">
+            <h3>Список событий к сожалению пустой :(</h3>
+        </div>
+    }
 }
 
 @code {
-    // todo: Mock data
+    private bool isLoading = true;
+
     private List<AccessEventReadDTO>? accessEventsList;
     private Dictionary<string, int> countEvents = new Dictionary<string, int>();
 
@@ -178,6 +190,7 @@ else {
                 accessEventsList = result.Take(5).OrderByDescending(x => x.Timestamp).ToList();
                 CountEvents();
                 ConfigChartPipeEvents();
+                isLoading = false;
             }
         }
     }

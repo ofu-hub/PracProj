@@ -1,9 +1,12 @@
 ﻿@page "/viewevents"
-@using AccessModuleSystem.Client.Models.Events
-@using AccessModuleSystem.Client.Models.Enums
+@using AccessModuleSystem.Models.Enums
+@using AccessModuleSystem.Contracts.AccessEvent
 @using AccessModuleSystem.Client.Extensions
 @using System.Text
 @using System.Globalization
+
+@inject HttpClient HttpClient
+
 @attribute [Authorize]
 
 <PageTitle>Просмотр и анализ событий доступа</PageTitle>
@@ -12,143 +15,107 @@
 
 <hr />
 
-<div class="filterMenu sticky-top">
-    <!-- Поля для фильтров -->
-    <div class="mb-3">
-        <label>Фильтр по типу события:</label>
-        <select @bind="selectedAccessType" class="form-select">
-            <option value="">Все</option>
-            @foreach (var type in Enum.GetValues(typeof(AccessType)))
-            {
-                <option value="@type">@((AccessType)type)</option>
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label>Фильтр по статусу доступа:</label>
-        <select @bind="selectedAccessStatus" class="form-select">
-            <option value="">Все</option>
-            @foreach (var status in Enum.GetValues(typeof(AccessStatus)))
-            {
-                <option value="@status">@((AccessStatus)status)</option>
-            }
-        </select>
-    </div>
-
-    <div class="mb-3">
-        <label>Фильтр по времени (начальная и конечная дата):</label>
-        <div class="d-flex">
-            <input type="date" @bind="startDate" class="form-control me-2" placeholder="Начальная дата" />
-            <input type="date" @bind="endDate" class="form-control" placeholder="Конечная дата" />
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Идет загрузка, пожалуйста, подождите...</span>
         </div>
     </div>
+}
+else 
+{
+    @if (filteredItems != null && accessEventsList != null)
+    {
+        <div class="filterMenu sticky-top">
+            <!-- Поля для фильтров -->
+            <div class="mb-3">
+                <label>Фильтр по типу события:</label>
+                <select @bind="selectedAccessType" class="form-select">
+                    <option value="">Все</option>
+                    @foreach (var type in Enum.GetValues(typeof(AccessType)))
+                    {
+                        <option value="@type">@((AccessType)type)</option>
+                    }
+                </select>
+            </div>
 
-    <input type="text" @bind="searchQuery" placeholder="Поиск по номеру машины..." class="form-control mb-3" />
+            <div class="mb-3">
+                <label>Фильтр по статусу доступа:</label>
+                <select @bind="selectedAccessStatus" class="form-select">
+                    <option value="">Все</option>
+                    @foreach (var status in Enum.GetValues(typeof(AccessStatus)))
+                    {
+                        <option value="@status">@((AccessStatus)status)</option>
+                    }
+                </select>
+            </div>
 
-    <!-- Кнопка для выполнения поиска -->
-    <button @onclick="PerformSearch" class="btn btn-primary mb-3">Применить фильтры</button>
-    <button @onclick="ClearPerformSearch" class="btn btn-primary mb-3">Сбросить фильтры</button>
-</div>
-
-<!-- Прокручиваемый контейнер для списка -->
-<div class="list-group-container">
-    <div class="list-group">
-        @foreach (var item in FilteredItems)
-        {
-            <a href="/viewevents-details/mock" class="list-group-item list-group-item-action">
-                <div class="d-flex w-100 justify-content-between">
-                    <p class="badge rounded-pill @GetBadgeClass(item.Status)">
-                        @item.Status.GetDisplayName()
-                    </p>
-                    <small class="text-muted">@item.Timestamp.ToString("g", CultureInfo.CurrentCulture)</small>
+            <div class="mb-3">
+                <label>Фильтр по времени (начальная и конечная дата):</label>
+                <div class="d-flex">
+                    <input type="date" @bind="startDate" class="form-control me-2" placeholder="Начальная дата" />
+                    <input type="date" @bind="endDate" class="form-control" placeholder="Конечная дата" />
                 </div>
-                <h5 class="mb-1">@item.AccessType.GetDisplayName()</h5>
-                <h6 class="mb-1">@item.LicensePlate</h6>
-            </a>
-        }
-    </div>
-</div>
+            </div>
+
+            <input type="text" @bind="searchQuery" placeholder="Поиск по номеру машины..." class="form-control mb-3" />
+
+            <!-- Кнопка для выполнения поиска -->
+            <button @onclick="PerformSearch" class="btn btn-primary mb-3">Применить фильтры</button>
+            <button @onclick="ClearPerformSearch" class="btn btn-primary mb-3">Сбросить фильтры</button>
+        </div>
+
+        <!-- Прокручиваемый контейнер для списка -->
+        <div class="list-group-container">
+            <div class="list-group">
+                @foreach (var item in filteredItems)
+                {
+                    <a href="/viewevents-details/@item.Id.ToString()" class="list-group-item list-group-item-action">
+                        <div class="d-flex w-100 justify-content-between">
+                            <p class="badge rounded-pill @GetBadgeClass(item.Status)">
+                                @item.Status.GetDisplayName()
+                            </p>
+                            <small class="text-muted">@item.Timestamp.ToString("g", CultureInfo.CurrentCulture)</small>
+                        </div>
+                        <h5 class="mb-1">@item.AccessType.GetDisplayName()</h5>
+                        <h6 class="mb-1">@item.LicensePlate</h6>
+                    </a>
+                }
+            </div>
+        </div>
+    }
+    else 
+    {
+        <div class="accessEvents justify-content-center align-content-center">
+            <h3>Список событий к сожалению пустой :(</h3>
+        </div>
+    }
+}
 
 @code {
+    private bool isLoading = true;
+
     private string searchQuery = string.Empty;
     private string selectedAccessType = string.Empty;
     private string selectedAccessStatus = string.Empty;
     private DateTime? startDate;
     private DateTime? endDate;
 
-    // Пример данных
-    private IEnumerable<ViewAccessEvents> items = null!;
+    private List<AccessEventReadDTO>? accessEventsList;
 
-    private IEnumerable<ViewAccessEvents> FilteredItems { get; set; } = null!;
-
-    // Инициализация FilteredItems
-    protected override void OnInitialized()
-    {
-        items = GetViewAccessEvents();
-        FilteredItems = items; // Инициализируем данными
-    }
-
-    private IEnumerable<ViewAccessEvents> GetViewAccessEvents() 
-    {
-        return new List<ViewAccessEvents>()
-        {
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow,
-                AccessType = Models.Enums.AccessType.Entry,
-                Status = Models.Enums.AccessStatus.Granted,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-3),
-                AccessType = Models.Enums.AccessType.Entry,
-                Status = Models.Enums.AccessStatus.Denied,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-2),
-                AccessType = Models.Enums.AccessType.Exit,
-                Status = Models.Enums.AccessStatus.Granted,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-1),
-                AccessType = Models.Enums.AccessType.Entry,
-                Status = Models.Enums.AccessStatus.Denied,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-22),
-                AccessType = Models.Enums.AccessType.Exit,
-                Status = Models.Enums.AccessStatus.Granted,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-12),
-                AccessType = Models.Enums.AccessType.Exit,
-                Status = Models.Enums.AccessStatus.Granted,
-                LicensePlate = RandPlate()
-            },
-            new ViewAccessEvents() {
-                Timestamp = DateTime.UtcNow.AddDays(-45),
-                AccessType = Models.Enums.AccessType.Entry,
-                Status = Models.Enums.AccessStatus.Granted,
-                LicensePlate = RandPlate()
-            }
-        };
-    }
+    private List<AccessEventReadDTO>? filteredItems;
 
     // Метод для выполнения поиска
     private void PerformSearch()
     {
-        FilteredItems = items
-            .Where(item =>
-                (string.IsNullOrEmpty(selectedAccessType) || item.AccessType.ToString() == selectedAccessType) &&
-                (string.IsNullOrEmpty(selectedAccessStatus) || item.Status.ToString() == selectedAccessStatus) &&
-                (!startDate.HasValue || item.Timestamp.Date >= startDate.Value.Date) &&
-                (!endDate.HasValue || item.Timestamp.Date <= endDate.Value.Date) &&
-                (string.IsNullOrEmpty(searchQuery) || item.LicensePlate.Contains(searchQuery, StringComparison.OrdinalIgnoreCase))
-            )
+        filteredItems = accessEventsList?
+        .Where(item =>
+            (string.IsNullOrEmpty(selectedAccessType) || item.AccessType.ToString() == selectedAccessType) &&
+            (string.IsNullOrEmpty(selectedAccessStatus) || item.Status.ToString() == selectedAccessStatus) &&
+            (!startDate.HasValue || item.Timestamp.Date >= startDate.Value.Date) &&
+            (!endDate.HasValue || item.Timestamp.Date <= endDate.Value.Date) &&
+            (string.IsNullOrEmpty(searchQuery) || item.LicensePlate.Contains(searchQuery, StringComparison.OrdinalIgnoreCase)))
             .ToList();
     }
 
@@ -159,7 +126,7 @@
         searchQuery = string.Empty;
         selectedAccessStatus = string.Empty;
         selectedAccessType = string.Empty;
-        FilteredItems = items;
+        filteredItems = accessEventsList;
     }
 
     private string GetBadgeClass(AccessStatus status)
@@ -171,31 +138,20 @@
             _ => "bg-secondary"
         };
     }
-
-    private string RandPlate()
+    protected override async Task OnInitializedAsync()
     {
-        var rand = new Random();
-        var chars = new char[] { 'А', 'В', 'С', 'О', 'Р', 'Е', 'Т', 'Н', 'К', 'Х', 'М' };
+        var response = await HttpClient.GetAsync("api/AccessEvent");
 
-        StringBuilder plate = new StringBuilder();
-
-        // Добавляем первый символ X
-        plate.Append(chars[rand.Next(chars.Length)]);
-
-        // Добавляем три цифры Y
-        for (int i = 0; i < 3; i++)
+        if (response.IsSuccessStatusCode)
         {
-            plate.Append(rand.Next(0, 10)); // Генерация случайной цифры от 0 до 9
+            var result = await response.Content.ReadFromJsonAsync<List<AccessEventReadDTO>>();
+
+            if (result != null && result.Count > 0)
+            {
+                accessEventsList = result.Take(5).OrderByDescending(x => x.Timestamp).ToList();
+                filteredItems = accessEventsList;
+                isLoading = false;
+            }
         }
-
-        // Добавляем последние два символа X
-        for (int i = 0; i < 2; i++)
-        {
-            plate.Append(chars[rand.Next(chars.Length)]);
-        }
-
-        plate.Append(" 30 RUS");
-
-        return plate.ToString();
     }
 }
