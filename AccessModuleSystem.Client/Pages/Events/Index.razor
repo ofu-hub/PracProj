@@ -71,7 +71,7 @@ else
             <div class="list-group">
                 @foreach (var item in filteredItems)
                 {
-                    <a href="/viewevents-details/@item.Id.ToString()" class="list-group-item list-group-item-action">
+                    <a href="/viewevents/@item.Id.ToString()" class="list-group-item list-group-item-action">
                         <div class="d-flex w-100 justify-content-between">
                             <p class="badge rounded-pill @GetBadgeClass(item.Status)">
                                 @item.Status.GetDisplayName()
