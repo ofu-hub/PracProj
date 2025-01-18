@@ -13,6 +13,11 @@ public class AccessEventReadDTO
   public Guid Id { get; set; }
 
   /// <summary>
+  /// Номерной знак автомобиля
+  /// </summary>
+  public string LicensePlate { get; set; } = string.Empty;
+
+  /// <summary>
   /// Идентификатор транспортного средства
   /// </summary>
   public Guid VehicleId { get; set; }

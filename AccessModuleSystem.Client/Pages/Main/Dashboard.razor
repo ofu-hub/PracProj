@@ -1,7 +1,10 @@
 ﻿@page "/dashboard"
-@using AccessModuleSystem.Client.Models.Events
-@using AccessModuleSystem.Client.Models.Enums
+@using AccessModuleSystem.Models.Enums
+@using AccessModuleSystem.Contracts.AccessEvent
 @using AccessModuleSystem.Client.Extensions
+
+@inject HttpClient HttpClient
+
 @attribute [Authorize]
 
 <PageTitle>Главная панель управления</PageTitle>
@@ -10,155 +13,112 @@
 
 <hr />
 
-<div class="accessEvents">
-    <div class="pieChart">
-        <h3>Круговая диаграмма активности</h3>
-        <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
-    </div>
+@if (accessEventsList is not null) {
+    <div class="accessEvents">
+        <div class="pieChart">
+            <h3>Круговая диаграмма активности</h3>
+            <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
+        </div>
 
-    <div class="dataTable">
-        <h3>Последние события доступа</h3>
-        <DataTable TModel="ViewAccessEvents" Items="viewList" AllowRowSelection="true" 
+        <div class="dataTable">
+            <h3>Последние события доступа</h3>
+            <DataTable TModel="AccessEventReadDTO" Items="accessEventsList" AllowRowSelection="true"
             SelectedItem="selectedItem" RowClickedEvent="SelectedItemCallBack" SelectedItemCssClass="bg-info">
-            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
-            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
-            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
-            <DataTableColumn TModel="ViewAccessEvents" CustomTitle="Время события" Property="(e) => e.Timestamp" />
-        </DataTable>
-        <div class="d-grid gap-2">
-            <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
+                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
+                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
+                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
+                <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Время события" Property="(e) => e.Timestamp" />
+            </DataTable>
+            <div class="d-grid gap-2">
+                <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
+            </div>
         </div>
     </div>
-</div>
 
-<hr />
+    <hr />
 
-<div class="selectedViewItem">
-    <h3>Информация об выбранном событии</h3>
-    @if (selectedItem is null) {
-        <p>Событие не выбрано. Выберите событие из таблицы "Последние события доступа"</p>
-    }
-    else {
-        <Card Style="width:auto;">
-            <CardBody>
-                <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
-            </CardBody>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">
-                    <strong>Транспорт</strong>
-                    <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
-                </li>
-                <li class="list-group-item">
-                    <strong>Время события</strong>
-                    <p>@selectedItem.Timestamp</p>
-                </li>
-                <li class="list-group-item">
-                    <strong>Тип события</strong>
-                    <p>@selectedItem.AccessType.GetDisplayName()</p>
-                </li>
-                <li class="list-group-item">
-                    <strong>Статус доступа</strong>
-                    <p>
-                    @if (selectedItem.Status is Models.Enums.AccessStatus.Granted) {
-                            <Badge Color="BadgeColor.Success">Предоставленный</Badge>
-                    }
-                    else {
-                            <Badge Color="BadgeColor.Danger">Отклонен</Badge>
-                    }
-                    </p>
+    <div class="selectedViewItem">
+        <h3>Информация об выбранном событии</h3>
+        @if (selectedItem is null)
+        {
+            <p>Событие не выбрано. Выберите событие из таблицы "Последние события доступа"</p>
+        }
+        else
+        {
+            <Card Style="width:auto;">
+                <CardBody>
+                    <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
+                </CardBody>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <strong>Транспорт</strong>
+                        <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Время события</strong>
+                        <p>@selectedItem.Timestamp</p>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Тип события</strong>
+                        <p>@selectedItem.AccessType.GetDisplayName()</p>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Статус доступа</strong>
+                        <p>
+                            @if (selectedItem.Status is AccessStatus.Granted)
+                            {
+                                <Badge Color="BadgeColor.Success">Предоставленный</Badge>
+                            }
+                            else
+                            {
+                                <Badge Color="BadgeColor.Danger">Отклонен</Badge>
+                            }
+                        </p>
 
-                </li>
-                <li class="list-group-item">
-                    <strong>Камера фиксирующая</strong>
-                    <p>@selectedItem.CameraId</p>
-                </li>
-            </ul>
-            <CardBody class="d-grid gap-2">
-                <Button Color="ButtonColor.Primary"> Подробнее о событии </Button>
-                <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
-            </CardBody>
-        </Card>
-    }
-</div>
+                    </li>
+                    <li class="list-group-item">
+                        <strong>Камера фиксирующая</strong>
+                        <p>@selectedItem.CameraId</p>
+                    </li>
+                </ul>
+                <CardBody class="d-grid gap-2">
+                    <Button Color="ButtonColor.Primary"> Подробнее о событии </Button>
+                    <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
+                </CardBody>
+            </Card>
+        }
+    </div>
+}
+else {
+    <div class="accessEvents justify-content-center align-content-center">
+        <h3>Список событий к сожалению пустой :(</h3>
+    </div>
+}
 
 @code {
     // todo: Mock data
-    private List<AccessEvents> accessEventsList = new List<AccessEvents>() 
-    {
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow,
-            AccessType = Models.Enums.AccessType.Entry,
-            Status = Models.Enums.AccessStatus.Granted
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(-3),
-            AccessType = Models.Enums.AccessType.Entry,
-            Status = Models.Enums.AccessStatus.Denied
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(-2),
-            AccessType = Models.Enums.AccessType.Exit,
-            Status = Models.Enums.AccessStatus.Granted
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddHours(-1),
-            AccessType = Models.Enums.AccessType.Entry,
-            Status = Models.Enums.AccessStatus.Denied
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(-22),
-            AccessType = Models.Enums.AccessType.Exit,
-            Status = Models.Enums.AccessStatus.Granted
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(-12),
-            AccessType = Models.Enums.AccessType.Exit,
-            Status = Models.Enums.AccessStatus.Granted
-        },
-        new AccessEvents() {
-            Timestamp = DateTime.UtcNow.AddMinutes(-45),
-            AccessType = Models.Enums.AccessType.Entry,
-            Status = Models.Enums.AccessStatus.Granted
-        }
-    };
-    private List<ViewAccessEvents> viewList = new List<ViewAccessEvents>();
+    private List<AccessEventReadDTO>? accessEventsList;
     private Dictionary<string, int> countEvents = new Dictionary<string, int>();
 
-    private ViewAccessEvents? selectedItem = null;
+    private AccessEventReadDTO? selectedItem = null;
 
     private PieChartConfig? _config1;
     private Chart? _chart1;
 
-    private void SelectedItemCallBack(ViewAccessEvents item) 
+    private void SelectedItemCallBack(AccessEventReadDTO item)
     {
         selectedItem = item;
     }
 
-    private void PrepateViewData() 
-    {
-        viewList = accessEventsList.Take(5).Select(x => new ViewAccessEvents() 
-        {
-            Id = x.Id,
-            AccessType = x.AccessType,
-            CameraId = x.CameraId,
-            LicensePlate = $"В024НУ 30 RUS",
-            Status = x.Status,
-            Timestamp = x.Timestamp,
-            VehicleId = x.VehicleId
-        }).OrderByDescending(x => x.Timestamp).ToList();
-    }
-
     private void CountEvents()
     {
-        for (var i = 0; i < accessEventsList.Count; i++) {
-            var nameEnum = Enum.GetName(typeof(AccessModuleSystem.Client.Models.Enums.AccessType), (int)accessEventsList[i].AccessType)!;
+        for (var i = 0; i < accessEventsList?.Count; i++) {
+            var nameEnum = Enum.GetName(typeof(AccessType), (int)accessEventsList[i].AccessType)!;
 
             if (countEvents.ContainsKey(accessEventsList[i].AccessType.ToString()))
                 countEvents[nameEnum]++;
             else 
                 countEvents.Add(nameEnum, 1);
-
-            Console.WriteLine(countEvents[accessEventsList[i].AccessType.ToString()]);
         }
     }
 
@@ -205,15 +165,20 @@
             });
     }
 
-    private void ConfigDataTableEvents()
-    {
-
-    }
-
     protected override async Task OnInitializedAsync()
     {
-        CountEvents();
-        PrepateViewData();
-        ConfigChartPipeEvents();
+        var response = await HttpClient.GetAsync("api/AccessEvent");
+
+        if (response.IsSuccessStatusCode)
+        {
+            var result = await response.Content.ReadFromJsonAsync<List<AccessEventReadDTO>>();
+
+            if (result != null && result.Count > 0)
+            {
+                accessEventsList = result.Take(5).OrderByDescending(x => x.Timestamp).ToList();
+                CountEvents();
+                ConfigChartPipeEvents();
+            }
+        }
     }
 }
