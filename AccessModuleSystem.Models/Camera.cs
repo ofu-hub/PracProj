@@ -5,7 +5,7 @@ namespace AccessModuleSystem.Models;
 /// <summary>
 /// Камеры на территории жилого комплекса
 /// </summary>
-public class Cameras
+public class Camera
 {
   /// <summary>
   /// Уникальный идентификатор

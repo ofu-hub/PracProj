@@ -31,4 +31,9 @@ public class VehicleReadDTO
   /// Дата добавления
   /// </summary>
   public DateTime CreatedAt { get; set; }
+
+  /// <summary>
+  /// Дата деактивации
+  /// </summary>
+  public DateTime? DeactivationAt { get; set; }
 }

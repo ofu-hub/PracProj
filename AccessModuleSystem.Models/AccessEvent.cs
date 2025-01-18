@@ -5,7 +5,7 @@ namespace AccessModuleSystem.Models;
 /// <summary>
 /// События доступа въезда или выезда с территории
 /// </summary>
-public class AccessEvents
+public class AccessEvent
 {
   /// <summary>
   /// Уникальный идентификатор
@@ -13,9 +13,14 @@ public class AccessEvents
   public Guid Id { get; set; }
 
   /// <summary>
-  /// Идентификатор авто
+  /// Идентификатор транспортного средства
   /// </summary>
   public Guid VehicleId { get; set; }
+
+  /// <summary>
+  /// Транспортное средство
+  /// </summary>
+  public virtual Vehicle Vehicle { get; set; } = null!;
 
   /// <summary>
   /// Время события
@@ -36,4 +41,10 @@ public class AccessEvents
   /// Камера фиксирующая
   /// </summary>
   public Guid CameraId { get; set; }
+
+  /// <summary>
+  /// Камера
+  /// </summary>
+  public virtual Camera Camera { get; set; } = null!;
+
 }

@@ -21,4 +21,9 @@ public class VehicleCreateDTO
   /// Статус разрешения
   /// </summary>
   public PermissionStatus Status { get; set; }
+
+  /// <summary>
+  /// Дата деактивации
+  /// </summary>
+  public DateTime? DeactivationAt { get; set; }
 }

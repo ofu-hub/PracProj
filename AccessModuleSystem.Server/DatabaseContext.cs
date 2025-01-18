@@ -11,6 +11,9 @@ public class DatabaseContext : DbContext
 {
   #region Tables
   public DbSet<User> Users { get; set; } = null!;
+  public DbSet<Vehicle> Vehicles { get; set; } = null!;
+  public DbSet<Camera> Cameras { get; set; } = null!;
+  public DbSet<AccessEvent> AccessEvents { get; set; } = null!;
   #endregion
 
   /// <summary>
@@ -47,6 +50,9 @@ public class DatabaseContext : DbContext
       entity.Property(e => e.PasswordHash).IsRequired();
       entity.Property(e => e.CreatedAt).IsRequired();
 
+      entity.Property(e => e.VehicleId).IsRequired(false);
+      entity.HasOne(e => e.Vehicle).WithOne().HasForeignKey<User>(e => e.VehicleId).IsRequired(false);
+
       entity.Property(e => e.RefreshToken).IsRequired(false);
       entity.Property(e => e.RefreshTokenExpires).IsRequired(false);
 
@@ -72,6 +78,39 @@ public class DatabaseContext : DbContext
           Name = "Иван",
           Surname = "Иванов",
           PasswordHash = "user"
+        }
+      );
+    });
+
+    modelBuilder.Entity<Vehicle>(entity =>
+    {
+      entity.HasKey(e => e.Id);
+
+      entity.Property(e => e.LicensePlate).IsRequired();
+      entity.Property(e => e.OwnerName).IsRequired();
+      entity.Property(e => e.Status).IsRequired();
+      entity.Property(e => e.CreatedAt).IsRequired();
+      entity.Property(e => e.DeactivationAt).IsRequired(false);
+
+      entity.Property(e => e.UserId).IsRequired(false);
+      entity.HasOne(e => e.User).WithOne().HasForeignKey<Vehicle>(e => e.UserId).IsRequired(false);
+
+      entity.HasData(
+        new Vehicle
+        {
+          Id = Guid.Parse("d1b0f2cc-14b3-4b69-928c-8b263f3ab9c4"),
+          CreatedAt = DateTime.SpecifyKind(DateTime.Parse("2023-05-15T20:37:19.000000Z"), DateTimeKind.Utc),
+          LicensePlate = "A726BC 30 RUS",
+          OwnerName = "Петров Петр",
+          Status = PermissionStatus.Active,
+        },
+        new Vehicle
+        {
+          Id = Guid.Parse("d1b0f2cc-12b3-4b69-928c-8b263f3ab9c4"),
+          CreatedAt = DateTime.SpecifyKind(DateTime.Parse("2023-05-15T20:37:19.000000Z"), DateTimeKind.Utc),
+          LicensePlate = "A123BC 30 RUS",
+          OwnerName = "Иванов Иван Иванович",
+          Status = PermissionStatus.Active,
         }
       );
     });

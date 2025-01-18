@@ -53,6 +53,16 @@ public class User
   public DateTime CreatedAt { get; set; }
 
   /// <summary>
+  /// Идентификатор транспортного средства
+  /// </summary>
+  public Guid? VehicleId { get; set; }
+
+  /// <summary>
+  /// Транспортное средство
+  /// </summary>
+  public virtual Vehicle? Vehicle { get; set; }
+
+  /// <summary>
   /// Токен обновления
   /// </summary>
   public string? RefreshToken { get; set; }

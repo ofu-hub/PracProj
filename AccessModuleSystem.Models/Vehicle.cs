@@ -5,7 +5,7 @@ namespace AccessModuleSystem.Models;
 /// <summary>
 /// Транспортные средства, зарегистрированные в системе
 /// </summary>
-public class Vehicles
+public class Vehicle
 {
   /// <summary>
   /// Уникальный идентификатор
@@ -31,4 +31,19 @@ public class Vehicles
   /// Дата добавления
   /// </summary>
   public DateTime CreatedAt { get; set; }
+
+  /// <summary>
+  /// Дата деактивации/удаления
+  /// </summary>
+  public DateTime? DeactivationAt { get; set; }
+
+  /// <summary>
+  /// Идентификатор пользователя
+  /// </summary>
+  public Guid? UserId { get; set; }
+
+  /// <summary>
+  /// Пользователь
+  /// </summary>
+  public virtual User? User { get; set; }
 }
