@@ -1,5 +1,107 @@
-﻿<h3>Add</h3>
+﻿@page "/vehicles/add"
+@using AccessModuleSystem.Models.Enums
+@using AccessModuleSystem.Contracts.Vehicle
+@using AccessModuleSystem.Client.Extensions
+@using System.Globalization
+@using System.Net.Http.Json
+@inject HttpClient HttpClient
+
+@attribute [Authorize]
+
+<PageTitle>Добавить транспортное средство</PageTitle>
+
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Идет загрузка, пожалуйста, подождите...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div class="container">
+        <h3 class="mt-4">Добавить новое транспортное средство</h3>
+        <EditForm Model="@vehicle" OnValidSubmit="@HandleValidSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="mb-3">
+                <label for="licensePlate" class="form-label">Номерной знак</label>
+                <InputText id="licensePlate" class="form-control" @bind-Value="vehicle.LicensePlate" />
+                <ValidationMessage For="@(() => vehicle.LicensePlate)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="ownerName" class="form-label">Имя владельца</label>
+                <InputText id="ownerName" class="form-control" @bind-Value="vehicle.OwnerName" />
+                <ValidationMessage For="@(() => vehicle.OwnerName)" />
+            </div>
+
+            <div class="mb-3">
+                <label for="deactivationAt" class="form-label">Дата деактивации</label>
+                <InputDate id="deactivationAt" class="form-control" @bind-Value="vehicle.DeactivationAt" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">Сохранить</button>
+        </EditForm>
+
+        @if (!string.IsNullOrEmpty(successMessage))
+        {
+            <div class="alert alert-success mt-3">
+                @successMessage
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(errorMessage))
+        {
+            <div class="alert alert-danger mt-3">
+                @errorMessage
+            </div>
+        }
+    </div>
+}
 
 @code {
+    private bool isLoading = false;
+    private VehicleCreateDTO vehicle = new();
+    private string? successMessage;
+    private string? errorMessage;
 
+    private async Task HandleValidSubmit()
+    {
+        isLoading = true;
+        successMessage = null;
+        errorMessage = null;
+
+        // Преобразуем дату в UTC
+        if (vehicle.DeactivationAt.HasValue)
+        {
+            vehicle.DeactivationAt = vehicle.DeactivationAt.Value.ToUniversalTime();
+        }
+
+        try
+        {
+            var response = await HttpClient.PostAsJsonAsync("api/vehicles", vehicle);
+
+            if (response.IsSuccessStatusCode)
+            {
+                successMessage = "Транспортное средство успешно добавлен.";
+                vehicle = new(); // Сброс формы
+            }
+            else
+            {
+                var error = await response.Content.ReadAsStringAsync();
+                errorMessage = $"Ошибка: {error}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла ошибка: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 }
