@@ -1,6 +1,6 @@
-﻿@page "/vehicles/add"
+﻿@page "/cameracontrol/add"
 @using AccessModuleSystem.Models.Enums
-@using AccessModuleSystem.Contracts.Vehicle
+@using AccessModuleSystem.Contracts.Camera
 @using AccessModuleSystem.Client.Extensions
 @using System.Globalization
 @using System.Net.Http.Json
@@ -8,7 +8,7 @@
 
 @attribute [Authorize]
 
-<PageTitle>Добавить транспортное средство</PageTitle>
+<PageTitle>Добавить камеру</PageTitle>
 
 @if (isLoading)
 {
@@ -21,26 +21,26 @@
 else
 {
     <div class="container">
-        <h3 class="mt-4">Добавить новое транспортное средство</h3>
-        <EditForm Model="@vehicle" OnValidSubmit="@HandleValidSubmit">
+        <h3 class="mt-4">Добавить новую камеру</h3>
+        <EditForm Model="@camera" OnValidSubmit="@HandleValidSubmit">
             <DataAnnotationsValidator />
             <ValidationSummary />
 
             <div class="mb-3">
-                <label for="licensePlate" class="form-label">Номерной знак</label>
-                <InputText id="licensePlate" class="form-control" @bind-Value="vehicle.LicensePlate" />
-                <ValidationMessage For="@(() => vehicle.LicensePlate)" />
+                <label for="location" class="form-label">Местоположение камеры</label>
+                <InputText id="location" class="form-control" @bind-Value="camera.Location" />
+                <ValidationMessage For="@(() => camera.Location)" />
             </div>
 
             <div class="mb-3">
-                <label for="ownerName" class="form-label">Имя владельца</label>
-                <InputText id="ownerName" class="form-control" @bind-Value="vehicle.OwnerName" />
-                <ValidationMessage For="@(() => vehicle.OwnerName)" />
-            </div>
-
-            <div class="mb-3">
-                <label for="deactivationAt" class="form-label">Дата деактивации</label>
-                <InputDate id="deactivationAt" class="form-control" @bind-Value="vehicle.DeactivationAt" />
+                <label for="status" class="form-label">Состояние камеры</label>
+                <InputSelect id="status" class="form-select" @bind-Value="camera.Status">
+                    @foreach (var status in Enum.GetValues<CameraStatus>())
+                    {
+                        <option value="@status">@status</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => camera.Status)" />
             </div>
 
             <button type="submit" class="btn btn-primary">Сохранить</button>
@@ -64,7 +64,7 @@ else
 
 @code {
     private bool isLoading = false;
-    private VehicleCreateDTO vehicle = new();
+    private CameraCreateDTO camera = new();
     private string? successMessage;
     private string? errorMessage;
 
@@ -74,20 +74,14 @@ else
         successMessage = null;
         errorMessage = null;
 
-        // Преобразуем дату в UTC
-        if (vehicle.DeactivationAt.HasValue)
-        {
-            vehicle.DeactivationAt = vehicle.DeactivationAt.Value.ToUniversalTime();
-        }
-
         try
         {
-            var response = await HttpClient.PostAsJsonAsync("api/vehicles", vehicle);
+            var response = await HttpClient.PostAsJsonAsync("api/cameras", camera);
 
             if (response.IsSuccessStatusCode)
             {
-                successMessage = "Транспортное средство успешно добавлено.";
-                vehicle = new(); // Сброс формы
+                successMessage = "Камера успешно добавлена.";
+                camera = new(); // Сброс формы
             }
             else
             {
