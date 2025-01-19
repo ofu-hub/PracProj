@@ -24,8 +24,8 @@
 else {
     <div class="actionMenu sticky-top">
         <Button Type="ButtonType.Link" Color="ButtonColor.Primary" To="/users/add"> Зарегистрировать пользователя </Button>
-        <Button Type="ButtonType.Button" Color="ButtonColor.Danger" @onclick="AddUser"> Удалить выбранных </Button>
-        <Button Type="ButtonType.Button" Color="ButtonColor.Warning" @onclick="AddUser"> Заблокировать выбранных </Button>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Danger" @onclick="DeleteSelectedUsers"> Удалить выбранных </Button>
+        <Button Type="ButtonType.Button" Color="ButtonColor.Warning" @onclick="DeactivateSelectedUsers"> Заблокировать выбранных </Button>
     </div>
 
     <hr />
@@ -84,11 +84,21 @@ else {
                 }
             </GridColumn>
             <GridColumn TItem="UserReadDTO" HeaderText="Действия" PropertyName="Id" Filterable="false" Class="d-grid gap-2">
-                <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Size="ButtonSize.Small">Удалить</Button>
-                <Button Type="ButtonType.Link" Color="ButtonColor.Secondary" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}?edit=true")>Редактировать</Button>
-                <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>
-                <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">Сбросить пароль</Button>
-                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}")>Подробнее</Button>
+                <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Size="ButtonSize.Small" @onclick="() => DeleteUser(context.Id)">
+                    Удалить
+                </Button>
+                <Button Type="ButtonType.Link" Color="ButtonColor.Secondary" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}?edit=true")>
+                    Редактировать
+                </Button>
+                <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small" @onclick="() => DeactivateUser(context.Id)">
+                    Заблокировать
+                </Button>
+                <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">
+                    Сбросить пароль
+                </Button>
+                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}")>
+                    Подробнее
+                </Button>
             </GridColumn>
         </GridColumns>
 
@@ -115,29 +125,94 @@ else {
 
     private int pageSize = 5;
 
-    private void AddUser() { }
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadUsers();
+    }
+
+    private async Task LoadUsers()
+    {
+        isLoading = true;
+        try
+        {
+            usersList = await HttpClient.GetFromJsonAsync<List<UserReadDTO>>("api/users");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Ошибка загрузки данных: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
 
     private void ChangeSize(int size) => pageSize = size;
+
+    private async Task DeleteUser(Guid userId)
+    {
+        isLoading = true;
+        try
+        {
+            var response = await HttpClient.DeleteAsync($"api/users/{userId}");
+            if (response.IsSuccessStatusCode)
+            {
+                usersList?.RemoveAll(v => v.Id == userId);
+            }
+            // Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Ошибка удаления: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeactivateUser(Guid userId)
+    {
+        isLoading = true;
+        try
+        {
+            var user = usersList?.FirstOrDefault(v => v.Id == userId);
+            if (user is not null)
+            {
+                user.IsBlocked = true;
+                var response = await HttpClient.PutAsJsonAsync($"api/users/{user.Id}", user);
+            }
+            // Navigation.NavigateTo(Navigation.Uri, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Ошибка деактивации: {ex.Message}");
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task DeleteSelectedUsers()
+    {
+        foreach (var vehicle in selectedUsers)
+        {
+            await DeleteUser(vehicle.Id);
+        }
+    }
+
+    private async Task DeactivateSelectedUsers()
+    {
+        foreach (var vehicle in selectedUsers)
+        {
+            await DeactivateUser(vehicle.Id);
+        }
+    }
 
     private Task OnSelectedItemsChanged(HashSet<UserReadDTO> users)
     {
         selectedUsers = users is not null && users.Any() ? users : new();
         return Task.CompletedTask;
-    }
-
-    protected override async Task OnInitializedAsync()
-    {
-        var response = await HttpClient.GetAsync("api/users");
-
-        if (response.IsSuccessStatusCode)
-        {
-            var result = await response.Content.ReadFromJsonAsync<List<UserReadDTO>>();
-
-            if (result != null && result.Count > 0)
-            {
-                usersList = result.ToList();
-                isLoading = false;
-            }
-        }
     }
 }
