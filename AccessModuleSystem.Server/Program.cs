@@ -67,6 +67,7 @@ app.UseStaticFiles();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+  app.UseWebAssemblyDebugging();
   app.UseDeveloperExceptionPage();
   app.UseSwagger();
   app.UseSwaggerUI(options =>

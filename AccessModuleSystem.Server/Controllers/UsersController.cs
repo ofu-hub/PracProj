@@ -1,5 +1,7 @@
 ﻿using AccessModuleSystem.Contracts.User;
+using AccessModuleSystem.Contracts.Vehicle;
 using AccessModuleSystem.Models;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -57,16 +59,31 @@ public class UsersController : ControllerBase
   /// <param name="id"></param>
   /// <returns></returns>
   [HttpGet("{id}")]
-  public async Task<ActionResult<UserReadDTO>> GetUser(Guid id)
+  public async Task<ActionResult<UserDetailDTO>> GetUser(Guid id)
   {
-    var user = await _context.Users.FindAsync(id);
+    var user = await _context.Users.Include(x => x.Vehicle).FirstOrDefaultAsync(x => x.Id == id);
 
     if (user == null)
     {
       return NotFound();
     }
 
-    return Ok(new UserReadDTO
+    var vehicleRead = new VehicleReadDTO();
+    if (user.Vehicle is not null)
+    {
+      vehicleRead.Id = user.Vehicle.Id;
+      vehicleRead.LicensePlate = user.Vehicle.LicensePlate;
+      vehicleRead.OwnerName = user.Vehicle.OwnerName;
+      vehicleRead.Status = user.Vehicle.Status;
+      vehicleRead.CreatedAt = user.Vehicle.CreatedAt;
+      vehicleRead.DeactivationAt = user.Vehicle.DeactivationAt;
+    }
+    else
+    {
+      vehicleRead = null;
+    }
+
+    return Ok(new UserDetailDTO
     {
       Id = user.Id,
       Username = user.Username,
@@ -76,7 +93,8 @@ public class UsersController : ControllerBase
       Email = user.Email,
       Role = user.Role,
       CreatedAt = user.CreatedAt,
-      IsBlocked = user.IsBlocked
+      IsBlocked = user.IsBlocked,
+      Vehicle = vehicleRead
     });
   }
 

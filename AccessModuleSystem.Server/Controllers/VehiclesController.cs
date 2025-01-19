@@ -1,7 +1,11 @@
 ﻿using AccessModuleSystem.Contracts.Vehicle;
+using AccessModuleSystem.Contracts.User;
 using AccessModuleSystem.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Http.HttpResults;
+using System.Data;
+using System.Xml.Linq;
 
 namespace AccessModuleSystem.Server.Controllers;
 
@@ -54,23 +58,42 @@ public class VehiclesController : ControllerBase
   /// <param name="id"></param>
   /// <returns></returns>
   [HttpGet("{id}")]
-  public async Task<ActionResult<VehicleReadDTO>> GetVehicle(Guid id)
+  public async Task<ActionResult<VehicleDetailDTO>> GetVehicle(Guid id)
   {
-    var vehicle = await _context.Vehicles.FindAsync(id);
+    var vehicle = await _context.Vehicles.Include(x => x.User).FirstOrDefaultAsync(x => x.Id == id);
 
     if (vehicle == null)
     {
       return NotFound();
     }
 
-    return Ok(new VehicleReadDTO
+    var userRead = new UserReadDTO();
+    if (vehicle.User is not null)
+    {
+      userRead.Id = vehicle.User.Id;
+      userRead.Username = vehicle.User.Username;
+      userRead.Name = vehicle.User.Name;
+      userRead.Surname = vehicle.User.Surname;
+      userRead.Patronymic = vehicle.User.Patronymic;
+      userRead.Email = vehicle.User.Email;
+      userRead.Role = vehicle.User.Role;
+      userRead.CreatedAt = vehicle.User.CreatedAt;
+      userRead.IsBlocked = vehicle.User.IsBlocked;
+    }
+    else
+    {
+      userRead = null;
+    }
+
+    return Ok(new VehicleDetailDTO
     {
       Id = vehicle.Id,
       LicensePlate = vehicle.LicensePlate,
       OwnerName = vehicle.OwnerName,
       Status = vehicle.Status,
       CreatedAt = vehicle.CreatedAt,
-      DeactivationAt = vehicle.DeactivationAt
+      DeactivationAt = vehicle.DeactivationAt,
+      User = userRead
     });
   }
 

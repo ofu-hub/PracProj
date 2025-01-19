@@ -29,7 +29,14 @@
                 <InputText type="password" id="password" class="form-control" @bind-Value="loginModel.Password" placeholder="Введите ваш пароль" />
             </div>
 
-            <button type="submit" class="btn btn-primary w-100">Войти</button>
+            @* <button type="submit" class="btn btn-primary w-100">Войти</button> *@
+            <Button Class="w-100" Size="ButtonSize.Medium" Type="ButtonType.Submit" Color="ButtonColor.Primary" Loading="isLoading">
+                <ChildContent>Войти</ChildContent>
+                <LoadingTemplate>
+                    <span class="spinner-grow spinner-border-sm" role="status" aria-hidden="true"></span>
+                    Авторизация...
+                </LoadingTemplate>
+            </Button>
         </EditForm>
 
         @if (isError)
@@ -40,12 +47,15 @@
 </div>
 
 @code {
+    private bool isLoading = false;
+
     private LoginDto loginModel = new LoginDto();
     private bool isError = false;
 
     private async Task HandleLoginSubmit()
     {
         isError = false;
+        isLoading = true;
 
         var response = await HttpClient.PostAsJsonAsync("api/auth", loginModel);
 

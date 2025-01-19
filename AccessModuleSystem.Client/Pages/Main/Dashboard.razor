@@ -36,10 +36,10 @@ else {
                     <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Номерной знак автомобиля" Property="(e) => e.LicensePlate" />
                     <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Тип события" Property="(e) => e.AccessType.GetDisplayName()" />
                     <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Статус доступа" Property="(e) => e.Status.GetDisplayName()" />
-                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Время события" Property="(e) => e.Timestamp" />
+                    <DataTableColumn TModel="AccessEventReadDTO" CustomTitle="Время события" Property="(e) => e.Timestamp.ToLongDateString()" />
                 </DataTable>
                 <div class="d-grid gap-2">
-                    <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/viewevents"> Просмотреть все события </Button>
+                    <Button Type="ButtonType.Link" Color="ButtonColor.Info" To="/events"> Просмотреть все события </Button>
                 </div>
             </div>
         </div>
@@ -61,7 +61,7 @@ else {
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item">
                             <strong>Транспорт</strong>
-                            <p>@selectedItem.LicensePlate</p> <Button Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small"> Подробнее </Button>
+                            <p>@selectedItem.LicensePlate</p> <Button Type="ButtonType.Link" Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small" To="@string.Format($"/vehicles/{selectedItem.VehicleId.ToString()}")"> Подробнее </Button>
                         </li>
                         <li class="list-group-item">
                             <strong>Время события</strong>
@@ -91,8 +91,8 @@ else {
                         </li>
                     </ul>
                     <CardBody class="d-grid gap-2">
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To=@string.Format($"/viewevents/{selectedItem.Id.ToString()}")> Подробнее о событии </Button>
-                        <Button Color="ButtonColor.Secondary"> Открыть камеру </Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To=@string.Format($"/events/{selectedItem.Id.ToString()}")>Подробнее о событии</Button>
+                        <Button Color="ButtonColor.Secondary">Открыть камеру</Button>
                     </CardBody>
                 </Card>
             }

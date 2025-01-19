@@ -1,4 +1,4 @@
-﻿@page "/viewevents/{id:Guid}"
+﻿@page "/events/{id:Guid}"
 @using AccessModuleSystem.Models.Enums
 @using AccessModuleSystem.Contracts.AccessEvent
 @using AccessModuleSystem.Client.Extensions
@@ -38,7 +38,7 @@ else
                     <dd class="col-sm-10">@eventDetails.Status.GetDisplayName()</dd>
 
                     <dt class="col-sm-2">Время события:</dt>
-                    <dd class="col-sm-10">@eventDetails.Timestamp.ToString()</dd>
+                    <dd class="col-sm-10">@eventDetails.Timestamp.ToLongDateString()</dd>
                 </dl>
             </div>
         </div>
@@ -59,7 +59,7 @@ else
                     <dd class="col-sm-10">@eventDetails.Vehicle.Status.GetDisplayName()</dd>
 
                     <dt class="col-sm-2">Дата добавления:</dt>
-                    <dd class="col-sm-10">@eventDetails.Vehicle.CreatedAt.ToString()</dd>
+                    <dd class="col-sm-10">@eventDetails.Vehicle.CreatedAt.ToLongDateString()</dd>
                 </dl>
             </div>
         </div>
@@ -95,7 +95,7 @@ else
         </div>
     }
 
-    <a href="/viewevents" class="btn btn-primary mt-2">Назад</a>
+    <a href="/events" class="btn btn-primary mt-2">Назад</a>
 }
 
 @code {

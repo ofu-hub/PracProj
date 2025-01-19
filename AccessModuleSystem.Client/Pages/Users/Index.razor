@@ -68,7 +68,7 @@ else {
             <GridColumn TItem="UserReadDTO" HeaderText="Электронный адрес" PropertyName="Email" SortKeySelector="item => item.Email">
                 @context.Email
             </GridColumn>
-            <GridColumn TItem="UserReadDTO" HeaderText="Дата создания" PropertyName="CreatedAt" SortKeySelector="item => item.CreatedAt">
+            <GridColumn TItem="UserReadDTO" HeaderText="Дата создания" PropertyName="CreatedAt" SortKeySelector="item => item.CreatedAt.ToLongDateString()">
                 @context.CreatedAt
             </GridColumn>
             @* todo: Show attribute name roles *@
@@ -88,7 +88,7 @@ else {
                 <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Size="ButtonSize.Small">Редактировать</Button>
                 <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>
                 <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">Сбросить пароль</Button>
-                <Button Type="ButtonType.Button" Color="ButtonColor.Info" Size="ButtonSize.Small">Подробнее</Button>
+                <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}")>Подробнее</Button>
             </GridColumn>
         </GridColumns>
 
