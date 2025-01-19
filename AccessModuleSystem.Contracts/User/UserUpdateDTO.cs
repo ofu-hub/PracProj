@@ -6,6 +6,11 @@
 public class UserUpdateDTO
 {
   /// <summary>
+  /// Имя пользователя
+  /// </summary>
+  public string Username { get; set; } = string.Empty;
+
+  /// <summary>
   /// Имя
   /// </summary>
   public string Name { get; set; } = string.Empty;

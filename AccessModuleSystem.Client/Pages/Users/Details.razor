@@ -1,10 +1,12 @@
 ﻿@page "/users/{id:Guid}"
-@using AccessModuleSystem.Models.Enums
-@using AccessModuleSystem.Contracts.User
+
 @using AccessModuleSystem.Client.Extensions
+@using AccessModuleSystem.Contracts.User
+@using AccessModuleSystem.Models.Enums
 @using System.Globalization
 
 @inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
 
 @attribute [Authorize]
 
@@ -31,54 +33,118 @@ else
                 <h4>Информация о пользователе</h4>
             </div>
             <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-2">Логин:</dt>
-                    <dd class="col-sm-10">@userDetail.Username</dd>
+                @if (isEditing)
+                {
+                    <EditForm Model="@userDetailForEdit" OnValidSubmit="SaveUserChanges">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-                    <dt class="col-sm-2">Электронный адрес:</dt>
-                    <dd class="col-sm-10">@userDetail.Email</dd>
+                        <div class="form-group">
+                            <label for="username">Логин</label>
+                            <InputText id="username" class="form-control" @bind-Value="userDetailForEdit.Username" />
+                        </div>
 
-                    <dt class="col-sm-2">Дата создания аккаунта:</dt>
-                    <dd class="col-sm-10">@userDetail.CreatedAt</dd>
+                        <div class="form-group">
+                            <label for="name">Имя</label>
+                            <InputText id="name" class="form-control" @bind-Value="userDetailForEdit.Name" />
+                        </div>
 
-                    <dt class="col-sm-2">ФИО:</dt>
-                    <dd class="col-sm-10">@string.Format($"{userDetail.Surname} {userDetail.Name} {userDetail.Patronymic}")</dd>
+                        <div class="form-group">
+                            <label for="surname">Фамилия</label>
+                            <InputText id="surname" class="form-control" @bind-Value="userDetailForEdit.Surname" />
+                        </div>
 
-                    <dt class="col-sm-2">Роль в системе:</dt>
-                    <dd class="col-sm-10">@userDetail.Role.GetDisplayName()</dd>
+                        <div class="form-group">
+                            <label for="patronymic">Отчество</label>
+                            <InputText id="patronymic" class="form-control" @bind-Value="userDetailForEdit.Patronymic" />
+                        </div>
 
-                    <dt class="col-sm-2">Блокировка:</dt>
-                    <dd class="col-sm-10">@userDetail.IsBlocked</dd>
-                </dl>
+                        <div class="form-group">
+                            <label for="email">Электронный адрес</label>
+                            <InputText id="email" class="form-control" @bind-Value="userDetailForEdit.Email" />
+                        </div>
+
+                        <div class="form-group">
+                            <label for="isblocked">Заблокирован</label>
+                            <InputCheckbox id="isBlocked" class="form-check-input" @bind-Value="userDetailForEdit.IsBlocked" />
+                        </div>
+                    </EditForm>
+                }
+                else
+                {
+                    @if (isSuccessMessageVisible)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            Данные успешно изменены!
+                        </div>
+                    }
+                    <dl class="row">
+                        <dt class="col-sm-2">Логин:</dt>
+                        <dd class="col-sm-10">@userDetail.Username</dd>
+
+                        <dt class="col-sm-2">Электронный адрес:</dt>
+                        <dd class="col-sm-10">@userDetail.Email</dd>
+
+                        <dt class="col-sm-2">Дата создания аккаунта:</dt>
+                        <dd class="col-sm-10">@userDetail.CreatedAt</dd>
+
+                        <dt class="col-sm-2">ФИО:</dt>
+                        <dd class="col-sm-10">@string.Format($"{userDetail.Surname} {userDetail.Name} {userDetail.Patronymic}")</dd>
+
+                        <dt class="col-sm-2">Роль в системе:</dt>
+                        <dd class="col-sm-10">@userDetail.Role.GetDisplayName()</dd>
+
+                        <dt class="col-sm-2">Блокировка:</dt>
+                        <dd class="col-sm-10">@userDetail.IsBlocked</dd>
+                    </dl>
+
+                    @if (userDetail.Vehicle is not null)
+                    {
+                        <div class="card card-tight mb-1 card-top-no-radius">
+                            <div class="card-header">
+                                <h4>Информация о транспортном средстве</h4>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-2">Имя владельца:</dt>
+                                    <dd class="col-sm-10">@userDetail.Vehicle.OwnerName</dd>
+
+                                    <dt class="col-sm-2">Номерной знак автомобиля:</dt>
+                                    <dd class="col-sm-10">@userDetail.Vehicle.LicensePlate</dd>
+
+                                    <dt class="col-sm-2">Статус разрешения:</dt>
+                                    <dd class="col-sm-10">@userDetail.Vehicle.Status.GetDisplayName()</dd>
+
+                                    <dt class="col-sm-2">Дата добавления:</dt>
+                                    <dd class="col-sm-10">@userDetail.Vehicle.CreatedAt.ToLongDateString()</dd>
+
+                                    <dt class="col-sm-2">Дата деактивации:</dt>
+                                    <dd class="col-sm-10">@userDetail.Vehicle.DeactivationAt?.ToLongDateString()</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
-        
-        @if (userDetail.Vehicle is not null)
-        {
-            <div class="card card-tight mb-1 card-top-no-radius">
-                <div class="card-header">
-                    <h4>Информация о транспортном средстве</h4>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-2">Имя владельца:</dt>
-                        <dd class="col-sm-10">@userDetail.Vehicle.OwnerName</dd>
 
-                        <dt class="col-sm-2">Номерной знак автомобиля:</dt>
-                        <dd class="col-sm-10">@userDetail.Vehicle.LicensePlate</dd>
+        <div class="d-flex mt-3">
+            <a href="/users" class="btn btn-primary">Назад</a>
 
-                        <dt class="col-sm-2">Статус разрешения:</dt>
-                        <dd class="col-sm-10">@userDetail.Vehicle.Status.GetDisplayName()</dd>
-
-                        <dt class="col-sm-2">Дата добавления:</dt>
-                        <dd class="col-sm-10">@userDetail.Vehicle.CreatedAt.ToLongDateString()</dd>
-
-                        <dt class="col-sm-2">Дата деактивации:</dt>
-                        <dd class="col-sm-10">@userDetail.Vehicle.DeactivationAt?.ToLongDateString()</dd>
-                    </dl>
-                </div>
+            <div>
+                @if (!isEditing)
+                {
+                    <a href="javascript:void(0);" @onclick="EnableEditMode" class="btn btn-secondary">Редактировать</a>
+                }
             </div>
-        }
+
+            <div>
+                @if (isEditing)
+                {
+                    <button type="submit" class="btn btn-success" @onclick="SaveUserChanges">Сохранить изменения</button>
+                }
+            </div>
+        </div>
     }
     else
     {
@@ -86,8 +152,6 @@ else
             <h3>@errorMessage</h3>
         </div>
     }
-
-    <a href="/users" class="btn btn-primary mt-2">Назад</a>
 }
 
 @code {
@@ -96,12 +160,22 @@ else
 
     [Parameter]
     public string id { get; set; } = string.Empty;
+
+    private bool isEditing = false;
+    private bool isSuccessMessageVisible = false;
+
     private UserDetailDTO? userDetail;
+    private UserUpdateDTO userDetailForEdit = new UserUpdateDTO();
 
     protected override async Task OnParametersSetAsync()
     {
         try
         {
+            // Получаем параметры запроса
+            var queryParameters = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query;
+            isEditing = queryParameters.Contains("edit=true");
+            isSuccessMessageVisible = queryParameters.Contains("success=true");
+
             if (Guid.TryParse(id, out var parsedId))
             {
                 var response = await HttpClient.GetAsync($"api/users/{parsedId}");
@@ -111,6 +185,18 @@ else
                     if (result != null)
                     {
                         userDetail = result;
+                        if (isEditing)
+                        {
+                            userDetailForEdit = new UserUpdateDTO
+                            {
+                                Username = result.Username,
+                                Name = result.Name,
+                                Surname = result.Surname,
+                                Patronymic = result.Patronymic,
+                                Email = result.Email,
+                                IsBlocked = result.IsBlocked
+                            };
+                        }
                     }
                     else
                     {
@@ -134,6 +220,33 @@ else
         finally
         {
             isLoading = false;
+            StateHasChanged(); // Обновляем состояние компонента после загрузки данных
+        }
+    }
+
+    private void EnableEditMode()
+    {
+        // Переходим в режим редактирования с параметром запроса
+        NavigationManager.NavigateTo($"/users/{id}?edit=true", true); // Обновляем страницу
+    }
+
+    private async Task SaveUserChanges()
+    {
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"api/users/{id}", userDetailForEdit);
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/users/{id}?success=true", true);
+            }
+            else
+            {
+                errorMessage = $"Ошибка сохранения данных: {response.ReasonPhrase}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла ошибка при сохранении: {ex.Message}";
         }
     }
 }

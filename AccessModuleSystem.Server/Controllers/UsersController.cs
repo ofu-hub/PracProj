@@ -153,6 +153,7 @@ public class UsersController : ControllerBase
       return NotFound();
     }
 
+    user.Username = userUpdateDTO.Username;
     user.Name = userUpdateDTO.Name;
     user.Surname = userUpdateDTO.Surname;
     user.Patronymic = userUpdateDTO.Patronymic;

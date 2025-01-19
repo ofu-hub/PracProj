@@ -85,7 +85,7 @@ else {
             </GridColumn>
             <GridColumn TItem="UserReadDTO" HeaderText="Действия" PropertyName="Id" Filterable="false" Class="d-grid gap-2">
                 <Button Type="ButtonType.Button" Color="ButtonColor.Danger" Size="ButtonSize.Small">Удалить</Button>
-                <Button Type="ButtonType.Button" Color="ButtonColor.Secondary" Size="ButtonSize.Small">Редактировать</Button>
+                <Button Type="ButtonType.Link" Color="ButtonColor.Secondary" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}?edit=true")>Редактировать</Button>
                 <Button Type="ButtonType.Button" Color="ButtonColor.Warning" Size="ButtonSize.Small">Заблокировать</Button>
                 <Button Type="ButtonType.Button" Color="ButtonColor.Primary" Size="ButtonSize.Small">Сбросить пароль</Button>
                 <Button Type="ButtonType.Link" Color="ButtonColor.Info" Size="ButtonSize.Small" To=@string.Format($"/users/{context.Id.ToString()}")>Подробнее</Button>

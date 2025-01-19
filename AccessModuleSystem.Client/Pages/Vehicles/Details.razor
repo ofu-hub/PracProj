@@ -1,10 +1,12 @@
 ﻿@page "/vehicles/{id:Guid}"
+
 @using AccessModuleSystem.Models.Enums
 @using AccessModuleSystem.Contracts.Vehicle
 @using AccessModuleSystem.Client.Extensions
 @using System.Globalization
 
 @inject HttpClient HttpClient
+@inject NavigationManager NavigationManager
 
 @attribute [Authorize]
 
@@ -30,54 +32,113 @@ else
                 <h4>Информация о транспорте</h4>
             </div>
             <div class="card-body">
-                <dl class="row">
-                    <dt class="col-sm-2">Имя владельца:</dt>
-                    <dd class="col-sm-10">@vehicleDetail.OwnerName</dd>
+                @if (isEditing) 
+                {
+                    <EditForm Model="@vehicleDetailForEdit" OnValidSubmit="SaveVehicleChanges">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
 
-                    <dt class="col-sm-2">Номерной знак автомобиля:</dt>
-                    <dd class="col-sm-10">@vehicleDetail.LicensePlate</dd>
+                        <div class="form-group">
+                            <label for="licensePlate">Номерной знак автомобиля</label>
+                            <InputText id="licensePlate" class="form-control" @bind-Value="vehicleDetailForEdit.LicensePlate" />
+                        </div>
 
-                    <dt class="col-sm-2">Статус разрешения:</dt>
-                    <dd class="col-sm-10">@vehicleDetail.Status.GetDisplayName()</dd>
+                        <div class="form-group">
+                            <label for="ownerName">Имя владельца</label>
+                            <InputText id="ownerName" class="form-control" @bind-Value="vehicleDetailForEdit.OwnerName" />
+                        </div>
 
-                    <dt class="col-sm-2">Дата добавления:</dt>
-                    <dd class="col-sm-10">@vehicleDetail.CreatedAt.ToLongDateString()</dd>
+                        <div class="form-group">
+                            <label for="status">Статус разрешения</label>
+                            <InputSelect id="status" class="form-control" @bind-Value="vehicleDetailForEdit.Status">
+                                @foreach (var status in Enum.GetValues<PermissionStatus>())
+                                {
+                                    <option value="@status">@status</option>
+                                }
+                            </InputSelect>
+                        </div>
 
-                    <dt class="col-sm-2">Дата деактивации:</dt>
-                    <dd class="col-sm-10">@vehicleDetail.DeactivationAt?.ToLongDateString()</dd>
-                </dl>
+                        <div class="form-group">
+                            <label for="deactivationAt">Дата деактивации</label>
+                            <InputDate id="deactivationAt" class="form-control" @bind-Value="vehicleDetailForEdit.DeactivationAt" />
+                        </div>
+                    </EditForm>
+                }
+                else 
+                {
+                    @if (isSuccessMessageVisible)
+                    {
+                        <div class="alert alert-success" role="alert">
+                            Данные успешно изменены!
+                        </div>
+                    }
+                    <dl class="row">
+                        <dt class="col-sm-2">Имя владельца:</dt>
+                        <dd class="col-sm-10">@vehicleDetail.OwnerName</dd>
+
+                        <dt class="col-sm-2">Номерной знак автомобиля:</dt>
+                        <dd class="col-sm-10">@vehicleDetail.LicensePlate</dd>
+
+                        <dt class="col-sm-2">Статус разрешения:</dt>
+                        <dd class="col-sm-10">@vehicleDetail.Status.GetDisplayName()</dd>
+
+                        <dt class="col-sm-2">Дата добавления:</dt>
+                        <dd class="col-sm-10">@vehicleDetail.CreatedAt.ToLongDateString()</dd>
+
+                        <dt class="col-sm-2">Дата деактивации:</dt>
+                        <dd class="col-sm-10">@vehicleDetail.DeactivationAt?.ToLongDateString()</dd>
+                    </dl>
+
+                    @if (vehicleDetail.User is not null)
+                    {
+                        <div class="card card-tight mb-1 card-bottom-no-radius">
+                            <div class="card-header">
+                                <h4>Информация о пользователе</h4>
+                            </div>
+                            <div class="card-body">
+                                <dl class="row">
+                                    <dt class="col-sm-2">Логин:</dt>
+                                    <dd class="col-sm-10">@vehicleDetail.User.Username</dd>
+
+                                    <dt class="col-sm-2">Электронный адрес:</dt>
+                                    <dd class="col-sm-10">@vehicleDetail.User.Email</dd>
+
+                                    <dt class="col-sm-2">Дата создания аккаунта:</dt>
+                                    <dd class="col-sm-10">@vehicleDetail.User.CreatedAt</dd>
+
+                                    <dt class="col-sm-2">ФИО:</dt>
+                                    <dd class="col-sm-10">@string.Format($"{vehicleDetail.User.Surname} {vehicleDetail.User.Name} {vehicleDetail.User.Patronymic}")</dd>
+
+                                    <dt class="col-sm-2">Роль в системе:</dt>
+                                    <dd class="col-sm-10">@vehicleDetail.User.Role.GetDisplayName()</dd>
+
+                                    <dt class="col-sm-2">Блокировка:</dt>
+                                    <dd class="col-sm-10">@vehicleDetail.User.IsBlocked</dd>
+                                </dl>
+                            </div>
+                        </div>
+                    }
+                }
             </div>
         </div>
 
-        @if (vehicleDetail.User is not null) 
-        {
-            <div class="card card-tight mb-1 card-bottom-no-radius">
-                <div class="card-header">
-                    <h4>Информация о пользователе</h4>
-                </div>
-                <div class="card-body">
-                    <dl class="row">
-                        <dt class="col-sm-2">Логин:</dt>
-                        <dd class="col-sm-10">@vehicleDetail.User.Username</dd>
+        <div class="d-flex mt-3">
+            <a href="/vehicles" class="btn btn-primary">Назад</a>
 
-                        <dt class="col-sm-2">Электронный адрес:</dt>
-                        <dd class="col-sm-10">@vehicleDetail.User.Email</dd>
-
-                        <dt class="col-sm-2">Дата создания аккаунта:</dt>
-                        <dd class="col-sm-10">@vehicleDetail.User.CreatedAt</dd>
-
-                        <dt class="col-sm-2">ФИО:</dt>
-                        <dd class="col-sm-10">@string.Format($"{vehicleDetail.User.Surname} {vehicleDetail.User.Name} {vehicleDetail.User.Patronymic}")</dd>
-
-                        <dt class="col-sm-2">Роль в системе:</dt>
-                        <dd class="col-sm-10">@vehicleDetail.User.Role.GetDisplayName()</dd>
-
-                        <dt class="col-sm-2">Блокировка:</dt>
-                        <dd class="col-sm-10">@vehicleDetail.User.IsBlocked</dd>
-                    </dl>
-                </div>
+            <div>
+                @if (!isEditing)
+                {
+                    <a href="javascript:void(0);" @onclick="EnableEditMode" class="btn btn-secondary">Редактировать</a>
+                }
             </div>
-        }
+
+            <div>
+                @if (isEditing)
+                {
+                    <button type="submit" class="btn btn-success" @onclick="SaveVehicleChanges">Сохранить изменения</button>
+                }
+            </div>
+        </div>
     }
     else
     {
@@ -85,8 +146,6 @@ else
             <h3>@errorMessage</h3>
         </div>
     }
-
-    <a href="/vehicles" class="btn btn-primary mt-2">Назад</a>
 }
 
 @code {
@@ -95,12 +154,22 @@ else
 
     [Parameter]
     public string id { get; set; } = string.Empty;
+
+    private bool isEditing = false;
+    private bool isSuccessMessageVisible = false;
+
     private VehicleDetailDTO? vehicleDetail;
+    private VehicleUpdateDTO vehicleDetailForEdit = new VehicleUpdateDTO();
 
     protected override async Task OnParametersSetAsync()
     {
         try
         {
+            // Получаем параметры запроса
+            var queryParameters = NavigationManager.ToAbsoluteUri(NavigationManager.Uri).Query;
+            isEditing = queryParameters.Contains("edit=true");
+            isSuccessMessageVisible = queryParameters.Contains("success=true");
+
             if (Guid.TryParse(id, out var parsedId))
             {
                 var response = await HttpClient.GetAsync($"api/vehicles/{parsedId}");
@@ -110,6 +179,16 @@ else
                     if (result != null)
                     {
                         vehicleDetail = result;
+                        if (isEditing)
+                        {
+                            vehicleDetailForEdit = new VehicleUpdateDTO
+                            {
+                                Status = result.Status,
+                                DeactivationAt = result.DeactivationAt,
+                                LicensePlate = result.LicensePlate,
+                                OwnerName = result.OwnerName
+                            };
+                        }
                     }
                     else
                     {
@@ -133,6 +212,39 @@ else
         finally
         {
             isLoading = false;
+            StateHasChanged(); // Обновляем состояние компонента после загрузки данных
+        }
+    }
+
+    private void EnableEditMode()
+    {
+        // Переходим в режим редактирования с параметром запроса
+        NavigationManager.NavigateTo($"/vehicles/{id}?edit=true", true); // Обновляем страницу
+    }
+
+    private async Task SaveVehicleChanges()
+    {
+        // Преобразуем дату в UTC
+        if (vehicleDetailForEdit.DeactivationAt.HasValue)
+        {
+            vehicleDetailForEdit.DeactivationAt = vehicleDetailForEdit.DeactivationAt.Value.ToUniversalTime();
+        }
+
+        try
+        {
+            var response = await HttpClient.PutAsJsonAsync($"api/vehicles/{id}", vehicleDetailForEdit);
+            if (response.IsSuccessStatusCode)
+            {
+                NavigationManager.NavigateTo($"/vehicles/{id}?success=true", true);
+            }
+            else
+            {
+                errorMessage = $"Ошибка сохранения данных: {response.ReasonPhrase}";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Произошла ошибка при сохранении: {ex.Message}";
         }
     }
 }

@@ -33,7 +33,7 @@
             <Button Class="w-100" Size="ButtonSize.Medium" Type="ButtonType.Submit" Color="ButtonColor.Primary" Loading="isLoading">
                 <ChildContent>Войти</ChildContent>
                 <LoadingTemplate>
-                    <span class="spinner-grow spinner-border-sm" role="status" aria-hidden="true"></span>
+                    <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
                     Авторизация...
                 </LoadingTemplate>
             </Button>
@@ -41,7 +41,7 @@
 
         @if (isError)
         {
-            <div class="alert alert-danger mt-3 text-center">Invalid username or password</div>
+            <div class="alert alert-danger mt-3 text-center">Неверное имя пользователя или пароль</div>
         }
     </div>
 </div>
