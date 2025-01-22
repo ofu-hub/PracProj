@@ -104,7 +104,16 @@ public class AccessEventController : Controller
   [HttpPost]
   public async Task<ActionResult<AccessEventReadDTO>> CreateAccessEvent(AccessEventCreateDTO accessEventCreateDTO)
   {
-    // todo: Может быть ещё нужно получать авто из базы
+    var camera = await _context.Cameras.FirstOrDefaultAsync(x => x.Id == accessEventCreateDTO.CameraId);
+
+    if (camera == null)
+      return BadRequest("There is no such camera in the system.");
+
+    var vehicle = await _context.Vehicles.FirstOrDefaultAsync(x => x.Id == accessEventCreateDTO.VehicleId);
+
+    if (vehicle == null)
+      return BadRequest("There is no such vehicle in the system.");
+
     var accessEvent = new AccessEvent
     {
       Id = Guid.NewGuid(),
@@ -112,7 +121,9 @@ public class AccessEventController : Controller
       Status = accessEventCreateDTO.Status,
       Timestamp = DateTime.UtcNow,
       CameraId = accessEventCreateDTO.CameraId,
-      VehicleId = accessEventCreateDTO.VehicleId
+      Camera = camera,
+      VehicleId = accessEventCreateDTO.VehicleId,
+      Vehicle = vehicle
     };
 
     _context.AccessEvents.Add(accessEvent);
