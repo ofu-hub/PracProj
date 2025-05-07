@@ -20,6 +20,8 @@
     </PackageReference>
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.3.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.2" />
+    <PackageReference Include="OpenCvSharp4" Version="4.10.0.20241108" />
+    <PackageReference Include="OpenCvSharp4.runtime.win" Version="4.10.0.20241108" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="8.3.0" />
   </ItemGroup>
@@ -28,6 +30,10 @@
     <ProjectReference Include="..\AccessModuleSystem.Client\AccessModuleSystem.Client.csproj" />
     <ProjectReference Include="..\AccessModuleSystem.Contracts\AccessModuleSystem.Contracts.csproj" />
     <ProjectReference Include="..\AccessModuleSystem.Models\AccessModuleSystem.Models.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Assets\" />
   </ItemGroup>
 
 </Project>

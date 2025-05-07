@@ -1,0 +1,81 @@
+﻿@page "/cameracontrol/{id:Guid}"
+@using AccessModuleSystem.Models.Enums
+@using AccessModuleSystem.Contracts.Camera
+@using AccessModuleSystem.Client.Extensions
+
+@inject HttpClient HttpClient
+
+@attribute [Authorize]
+
+<PageTitle>Просмотр камеры</PageTitle>
+
+<h1>Просмотр камеры</h1>
+
+<hr />
+@if (isLoading)
+{
+    <div class="d-flex justify-content-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Идет загрузка, пожалуйста, подождите...</span>
+        </div>
+    </div>
+}
+else
+{
+    <div>
+        <h5>Местоположение: @camera?.Location</h5>
+        <p>Статус:
+            <span class="badge rounded-pill @GetBadgeClass(camera!.Status)">
+                @camera?.Status.GetDisplayName()
+            </span>
+        </p>
+    </div>
+    <div>
+        <img src="api/cameras/stream/@Id" class="img-fluid rounded border" style="max-height: 480px;" />
+    </div>
+}
+
+@code {
+    [Parameter]
+    public string id { get; set; } = string.Empty;
+    private Guid Id { get => Guid.Parse(id); }
+
+    private CameraReadDTO? camera;
+    private bool isLoading = true;
+
+    private string GetBadgeClass(CameraStatus status)
+    {
+        return status switch
+        {
+            CameraStatus.Active => "bg-success",
+            CameraStatus.Inactive => "bg-danger",
+            CameraStatus.Maintenance => "bg-warning",
+            CameraStatus.Error => "bg-secondary",
+            _ => "bg-secondary"
+        };
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            // Загружаем инфу о камере
+            if (Guid.TryParse(id, out var parsedId))
+            { 
+                var response = await HttpClient.GetAsync($"api/cameras/{parsedId}");
+                if (response.IsSuccessStatusCode)
+                { 
+                    var result = await response.Content.ReadFromJsonAsync<CameraReadDTO>();
+                    if (result != null)
+                    {
+                        camera = result;
+                    }
+                }
+            }
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+}
