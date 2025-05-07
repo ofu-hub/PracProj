@@ -364,3 +364,4 @@ FodyWeavers.xsd
 /AccessModuleSystem.Server/appsettings.Development.json
 /AccessModuleSystem.Server/wwwroot/net8.0
 /.idea/.idea.AccessModuleSystem/.idea
+/AccessModuleSystem.Server/Assets
