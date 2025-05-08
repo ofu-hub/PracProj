@@ -3,6 +3,7 @@ using System;
 using AccessModuleSystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccessModuleSystem.Server.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250508113336_edit_context_migrate")]
+    partial class edit_context_migrate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,9 +39,6 @@ namespace AccessModuleSystem.Server.Migrations
 
                     b.Property<int>("EventType")
                         .HasColumnType("integer");
-
-                    b.Property<byte[]>("Screenshot")
-                        .HasColumnType("bytea");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -250,14 +250,6 @@ namespace AccessModuleSystem.Server.Migrations
                             CreatedAt = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc),
                             LicensePlate = "A123BC 30 RUS",
                             OwnerName = "Иванов Иван Иванович",
-                            Status = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("8a7cb1e2-3c3b-4f8e-91e3-45b0b8b70c00"),
-                            CreatedAt = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc),
-                            LicensePlate = "О333ОО 30 RUS",
-                            OwnerName = "Неизвестно",
                             Status = 0
                         });
                 });

@@ -20,7 +20,7 @@ public class AccessEventReadDTO
   /// <summary>
   /// Идентификатор транспортного средства
   /// </summary>
-  public Guid VehicleId { get; set; }
+  public Guid? VehicleId { get; set; }
 
   /// <summary>
   /// Время события
@@ -41,4 +41,9 @@ public class AccessEventReadDTO
   /// Идентификатор камеры, зафиксировавшей событие
   /// </summary>
   public Guid CameraId { get; set; }
+
+  /// <summary>
+  /// Тип события (детекция/классификация)
+  /// </summary>
+  public AccessEventType EventType { get; set; }
 }

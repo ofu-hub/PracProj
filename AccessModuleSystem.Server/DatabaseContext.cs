@@ -27,8 +27,8 @@ public class DatabaseContext : DbContext
   /// <param name="options"></param>
   public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options)
   {
-    if (Database.GetPendingMigrations().Any())
-      Database.Migrate();
+    //if (Database.GetPendingMigrations().Any())
+    //  Database.Migrate();
   }
 
   /// <summary>
@@ -68,8 +68,8 @@ public class DatabaseContext : DbContext
           Role = UserRole.Admin,
           Username = "admin",
           Email = "admin@ams.ru",
-          Name = "Павел",
-          Surname = "Маркелов",
+          Name = "Марк",
+          Surname = "Власов",
           PasswordHash = "admin",
         },
         new User
@@ -118,6 +118,14 @@ public class DatabaseContext : DbContext
           LicensePlate = "A123BC 30 RUS",
           OwnerName = "Иванов Иван Иванович",
           Status = PermissionStatus.Active,
+        }, 
+        new Vehicle
+        {
+          Id = Guid.Parse("8a7cb1e2-3c3b-4f8e-91e3-45b0b8b70c00"),
+          CreatedAt = DateTime.SpecifyKind(DateTime.Parse("2023-05-15T20:37:19.000000Z"), DateTimeKind.Utc),
+          LicensePlate = "О333ОО 30 RUS",
+          OwnerName = "Неизвестно",
+          Status = PermissionStatus.Active
         }
       );
     });
@@ -132,11 +140,14 @@ public class DatabaseContext : DbContext
 
       entity.HasOne(a => a.Vehicle)
       .WithMany()
-      .HasForeignKey(a => a.VehicleId);
+      .HasForeignKey(a => a.VehicleId).IsRequired(false);
 
       entity.HasOne(a => a.Camera)
       .WithMany()
       .HasForeignKey(a => a.CameraId);
+
+      entity.Property(a => a.EventType).IsRequired();
+      entity.Property(e => e.Screenshot).IsRequired(false);
 
       entity.HasData(
         new AccessEvent
@@ -146,8 +157,8 @@ public class DatabaseContext : DbContext
           AccessType = AccessType.Entry,
           Status = AccessStatus.Granted,
           CameraId = Guid.Parse("31376f03-ffed-427b-a5cf-e7a04105d689"),
-          VehicleId = Guid.Parse("15e9434f-0499-4b67-9855-8b82379bf458")
-
+          VehicleId = Guid.Parse("15e9434f-0499-4b67-9855-8b82379bf458"),
+          EventType = AccessEventType.Detection
         },
         new AccessEvent
         {
@@ -156,7 +167,18 @@ public class DatabaseContext : DbContext
           AccessType = AccessType.Entry,
           Status = AccessStatus.Granted,
           CameraId = Guid.Parse("dbc4b6ba-d49f-4785-8ba0-14516620ae66"),
-          VehicleId = Guid.Parse("5b037b65-19f1-402a-ad5b-9779ef098b19")
+          VehicleId = Guid.Parse("5b037b65-19f1-402a-ad5b-9779ef098b19"),
+          EventType = AccessEventType.Detection
+        },
+        new AccessEvent
+        {
+          Id = Guid.Parse("31e67b52-4b16-4bdc-ac3e-3c33b8013a13"),
+          Timestamp = DateTime.SpecifyKind(DateTime.Parse("2023-05-15T20:37:19.000000Z"), DateTimeKind.Utc),
+          AccessType = AccessType.Entry,
+          Status = AccessStatus.Granted,
+          CameraId = Guid.Parse("dbc4b6ba-d49f-4785-8ba0-14516620ae66"),
+          EventType = AccessEventType.Classification,
+          // VehicleId = Guid.Parse("8a7cb1e2-3c3b-4f8e-91e3-45b0b8b70c00")
         }
       );
     });

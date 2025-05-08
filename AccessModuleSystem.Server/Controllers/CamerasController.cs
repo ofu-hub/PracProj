@@ -1,9 +1,9 @@
-﻿using AccessModuleSystem.Contracts.AccessEvent;
-using AccessModuleSystem.Contracts.Camera;
+﻿using AccessModuleSystem.Contracts.Camera;
 using AccessModuleSystem.Models;
+using AccessModuleSystem.Models.Enums;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System.Diagnostics;
+using OpenCvSharp;
 
 namespace AccessModuleSystem.Server.Controllers;
 
@@ -103,16 +103,13 @@ public class CamerasController : Controller
     const string boundary = "--frame";
 
     var videoPath = "Assets/camera_simulation.mp4";
-
-    using var video = new OpenCvSharp.VideoCapture(videoPath);
+    using var video = new VideoCapture(videoPath);
     using var httpClient = new HttpClient();
-    var frame = new OpenCvSharp.Mat();
+    var frame = new Mat();
     var cancellationToken = HttpContext.RequestAborted;
 
     YoloDetectionResult? lastYoloDetections = null;
     var yoloLock = new object();
-
-    // Запускаем фоновую задачу для YOLO
     var inferenceTask = Task.CompletedTask;
 
     try
@@ -124,7 +121,6 @@ public class CamerasController : Controller
 
         var currentFrame = frame.Clone();
 
-        // YOLO — асинхронно
         if (inferenceTask.IsCompleted)
         {
           inferenceTask = Task.Run(async () =>
@@ -134,10 +130,13 @@ public class CamerasController : Controller
             {
               lastYoloDetections = detections;
             }
+            if (detections != null)
+            {
+              await TrySaveAccessEventAsync(id, currentFrame, detections);
+            }
           }, cancellationToken);
         }
 
-        // Применяем последнюю разметку
         lock (yoloLock)
         {
           if (lastYoloDetections != null)
@@ -146,42 +145,103 @@ public class CamerasController : Controller
           }
         }
 
-        // Кодируем и отправляем кадр
-        OpenCvSharp.Cv2.ImEncode(".jpg", frame, out var imageBytes);
+        Cv2.ImEncode(".jpg", frame, out var imageBytes);
         await WriteMjpegFrame(Response, boundary, imageBytes);
 
-        await Task.Delay(1000 / 60, cancellationToken); // ~60 FPS
+        await Task.Delay(1000 / 60, cancellationToken);
       }
     }
     catch (TaskCanceledException)
     {
-      Console.WriteLine($"Стрим камеры {id} остановлен клиентом (отключился).");
+      Console.WriteLine($"Стрим камеры {id} остановлен клиентом.");
     }
     catch (Exception ex)
     {
       Console.WriteLine($"Ошибка в MJPEG потоке камеры {id}: {ex.Message}");
     }
-    finally
-    {
-      Console.WriteLine($"Стрим камеры {id} завершён.");
-    }
   }
 
+  private async Task TrySaveAccessEventAsync(Guid cameraId, Mat frame, YoloDetectionResult detections)
+  {
+    var now = DateTime.UtcNow;
+    var tenMinutesAgo = now.AddMinutes(-10);
 
-  private async Task<YoloDetectionResult?> RunYoloInferenceAsync(OpenCvSharp.Mat frame, HttpClient httpClient)
+    var classificationNames = detections.Detections
+        .Where(d => d.ClassId is not null && !string.IsNullOrEmpty(d.ClassName))
+        .Select(d => d.ClassName!.ToLowerInvariant())
+        .ToList();
+
+    var plateDetection = detections.Detections
+        .FirstOrDefault(d => !string.IsNullOrEmpty(d.RecognizedText));
+
+    var plate = plateDetection?.RecognizedText?.Trim();
+    bool plateIsUnknown = string.IsNullOrEmpty(plate) || plate == "Не удалось распознать";
+
+    var existingEvent = await _context.AccessEvents
+        .Where(e => e.Vehicle.LicensePlate == plate && e.Timestamp >= tenMinutesAgo)
+        .FirstOrDefaultAsync();
+
+    if (existingEvent != null)
+      return;
+
+    var eventType = AccessEventType.Detection;
+    if (classificationNames.Contains("ambulance") || classificationNames.Contains("ambulance_sign"))
+      eventType = AccessEventType.Classification;
+
+    var status = AccessStatus.Granted;
+    if (eventType == AccessEventType.Detection && classificationNames.All(n => n == "none"))
+    {
+      if (plateIsUnknown || !await _context.Vehicles.AnyAsync(v => v.LicensePlate == plate))
+      {
+        status = AccessStatus.Denied;
+      }
+    }
+
+    Cv2.ImEncode(".jpg", frame, out var imageBytes);
+
+    var vehicle = await _context.Vehicles.FirstOrDefaultAsync(v => v.LicensePlate == plate);
+    if (vehicle == null)
+    {
+      vehicle = new Vehicle
+      {
+        Id = Guid.NewGuid(),
+        LicensePlate = plate ?? "UNKNOWN",
+        OwnerName = "Неизвестно",
+        Status = PermissionStatus.Active,
+        CreatedAt = now
+      };
+      _context.Vehicles.Add(vehicle);
+    }
+
+    var accessEvent = new AccessEvent
+    {
+      Id = Guid.NewGuid(),
+      Timestamp = now,
+      AccessType = AccessType.Entry,
+      Status = status,
+      Vehicle = vehicle,
+      CameraId = cameraId,
+      EventType = eventType,
+      VehicleId = vehicle.Id,
+      Screenshot = imageBytes.ToArray()
+    };
+
+    _context.AccessEvents.Add(accessEvent);
+    await _context.SaveChangesAsync();
+  }
+
+  private async Task<YoloDetectionResult?> RunYoloInferenceAsync(Mat frame, HttpClient httpClient)
   {
     var tempPath = Path.GetTempFileName() + ".jpg";
-    OpenCvSharp.Cv2.ImWrite(tempPath, frame);
+    Cv2.ImWrite(tempPath, frame);
 
     try
     {
       using var imageContent = new StreamContent(System.IO.File.OpenRead(tempPath));
       imageContent.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("image/jpeg");
-
       using var form = new MultipartFormDataContent();
       form.Add(imageContent, "file", "frame.jpg");
 
-      // Запросы параллельно
       var classificationTask = httpClient.PostAsync("http://localhost:8000/classification", form);
       var detectionTask = httpClient.PostAsync("http://localhost:8000/detect", form);
 
@@ -198,16 +258,16 @@ public class CamerasController : Controller
 
       if (detectionTask.Result.IsSuccessStatusCode)
       {
-        var detectResponse = await detectionTask.Result.Content.ReadFromJsonAsync<YoloDetectionResult>();
-        if (detectResponse != null)
-          result.Detections.AddRange(detectResponse.Detections);
+        var detectResult = await detectionTask.Result.Content.ReadFromJsonAsync<YoloDetectionResult>();
+        if (detectResult != null)
+          result.Detections.AddRange(detectResult.Detections);
       }
 
       return result;
     }
     catch (Exception ex)
     {
-      Console.WriteLine("Ошибка запроса к YOLO API: " + ex.Message);
+      Console.WriteLine("Ошибка YOLO: " + ex.Message);
     }
     finally
     {
@@ -217,21 +277,16 @@ public class CamerasController : Controller
     return null;
   }
 
-
-  private void DrawDetections(OpenCvSharp.Mat frame, YoloDetectionResult detections)
+  private void DrawDetections(Mat frame, YoloDetectionResult detections)
   {
-    var selected_detections = detections.Detections
-        .Where(d => d.ClassId == 0 || !string.IsNullOrEmpty(d.RecognizedText))
-        .ToList();
-
     foreach (var det in detections.Detections)
     {
-      var p1 = new OpenCvSharp.Point(det.Bbox[0], det.Bbox[1]);
-      var p2 = new OpenCvSharp.Point(det.Bbox[2], det.Bbox[3]);
+      var p1 = new Point(det.Bbox[0], det.Bbox[1]);
+      var p2 = new Point(det.Bbox[2], det.Bbox[3]);
 
       var color = det.RecognizedText != null
-          ? new OpenCvSharp.Scalar(0, 0, 255)   // красный для номеров
-          : new OpenCvSharp.Scalar(0, 255, 0);  // зелёный для машин
+          ? new Scalar(0, 0, 255)
+          : new Scalar(0, 255, 0);
 
       frame.Rectangle(p1, p2, color, 2);
 
@@ -239,13 +294,8 @@ public class CamerasController : Controller
           ? $"plate: {det.RecognizedText}"
           : $"{det.ClassName} {det.Confidence * 100:F0}%";
 
-      var textPos = new OpenCvSharp.Point(p1.X, Math.Max(15, p1.Y - 10));
-
-      frame.PutText(label,
-          textPos,
-          OpenCvSharp.HersheyFonts.HersheySimplex,
-          0.6,
-          new OpenCvSharp.Scalar(255, 255, 255), 1);
+      var textPos = new Point(p1.X, Math.Max(15, p1.Y - 10));
+      frame.PutText(label, textPos, HersheyFonts.HersheySimplex, 0.6, new Scalar(255, 255, 255), 1);
     }
   }
 
@@ -258,18 +308,18 @@ public class CamerasController : Controller
     await response.WriteAsync("\r\n");
     await response.Body.FlushAsync();
   }
-}
 
-public class YoloDetectionResult
-{
-  public List<Detection> Detections { get; set; } = new();
-}
+  private class YoloDetectionResult
+  {
+    public List<Detection> Detections { get; set; } = new();
+  }
 
-public class Detection
-{
-  public int? ClassId { get; set; }
-  public string ClassName { get; set; } = "";
-  public float Confidence { get; set; }
-  public List<int> Bbox { get; set; } = new();
-  public string? RecognizedText { get; set; }
+  private class Detection
+  {
+    public int? ClassId { get; set; }
+    public string ClassName { get; set; } = "";
+    public float Confidence { get; set; }
+    public List<int> Bbox { get; set; } = new();
+    public string? RecognizedText { get; set; }
+  }
 }

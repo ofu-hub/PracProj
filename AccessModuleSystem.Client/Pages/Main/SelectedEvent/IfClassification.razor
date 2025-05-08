@@ -1,0 +1,46 @@
+﻿@using AccessModuleSystem.Client.Extensions
+@using AccessModuleSystem.Contracts.AccessEvent
+@using AccessModuleSystem.Models.Enums
+
+<Card Style="width:auto;">
+    <CardBody>
+        <CardTitle><Badge Color="BadgeColor.Warning">Классификация</Badge></CardTitle>
+    </CardBody>
+    <ul class="list-group list-group-flush">
+        <li class="list-group-item">
+            <strong>Номерной знак</strong>
+            <p>@SelectedItem.LicensePlate</p>
+        </li>
+        <li class="list-group-item">
+            <strong>Время события</strong>
+            <p>@SelectedItem.Timestamp</p>
+        </li>
+        <li class="list-group-item">
+            <strong>Тип события</strong>
+            <p>@SelectedItem.AccessType.GetDisplayName()</p>
+        </li>
+        <li class="list-group-item">
+            <strong>Статус доступа</strong>
+            <p>
+                @if (SelectedItem.Status is AccessStatus.Granted)
+                {
+                    <Badge Color="BadgeColor.Success">Предоставленный</Badge>
+                }
+                else
+                {
+                    <Badge Color="BadgeColor.Danger">Отклонен</Badge>
+                }
+            </p>
+
+        </li>
+    </ul>
+    <CardBody class="d-grid gap-2">
+        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To=@string.Format($"/events/{SelectedItem.Id.ToString()}")>Подробнее о событии</Button>
+        <Button Color="ButtonColor.Secondary">Открыть камеру</Button>
+    </CardBody>
+</Card>
+
+@code {
+    [Parameter]
+    public AccessEventReadDTO SelectedItem { get; set; } = null!;
+}

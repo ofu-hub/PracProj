@@ -46,7 +46,8 @@ public class AccessEventController : Controller
         LicensePlate = accessEvent.Vehicle.LicensePlate,
         Status = accessEvent.Status,
         Timestamp = accessEvent.Timestamp,
-        VehicleId = accessEvent.VehicleId
+        VehicleId = accessEvent.VehicleId,
+        EventType = accessEvent.EventType
       })
       .ToListAsync();
 

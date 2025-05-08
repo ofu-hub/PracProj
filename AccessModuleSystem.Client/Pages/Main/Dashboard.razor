@@ -2,6 +2,7 @@
 @using AccessModuleSystem.Models.Enums
 @using AccessModuleSystem.Contracts.AccessEvent
 @using AccessModuleSystem.Client.Extensions
+@using AccessModuleSystem.Client.Pages.Main.SelectedEvent
 
 @inject HttpClient HttpClient
 
@@ -25,8 +26,12 @@ else {
     {
         <div class="accessEvents">
             <div class="pieChart">
-                <h3>Круговая диаграмма активности</h3>
+                <h3>Активность</h3>
                 <Chart Width="400px" Config="_config1" @ref="_chart1"></Chart>
+            </div>
+            <div class="pieChart">
+                <h3>События</h3>
+                <Chart Width="400px" Config="_config2" @ref="_chart2"></Chart>
             </div>
 
             <div class="dataTable">
@@ -54,47 +59,14 @@ else {
             }
             else
             {
-                <Card Style="width:auto;">
-                    <CardBody>
-                        <CardTitle>Идентификатор события #@selectedItem.Id</CardTitle>
-                    </CardBody>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">
-                            <strong>Транспорт</strong>
-                            <p>@selectedItem.LicensePlate</p> <Button Type="ButtonType.Link" Color="ButtonColor.Info" Outline="true" Size="ButtonSize.Small" To="@string.Format($"/vehicles/{selectedItem.VehicleId.ToString()}")"> Подробнее </Button>
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Время события</strong>
-                            <p>@selectedItem.Timestamp</p>
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Тип события</strong>
-                            <p>@selectedItem.AccessType.GetDisplayName()</p>
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Статус доступа</strong>
-                            <p>
-                                @if (selectedItem.Status is AccessStatus.Granted)
-                                {
-                                    <Badge Color="BadgeColor.Success">Предоставленный</Badge>
-                                }
-                                else
-                                {
-                                    <Badge Color="BadgeColor.Danger">Отклонен</Badge>
-                                }
-                            </p>
-
-                        </li>
-                        <li class="list-group-item">
-                            <strong>Камера фиксирующая</strong>
-                            <p>@selectedItem.CameraId</p>
-                        </li>
-                    </ul>
-                    <CardBody class="d-grid gap-2">
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Link" To=@string.Format($"/events/{selectedItem.Id.ToString()}")>Подробнее о событии</Button>
-                        <Button Color="ButtonColor.Secondary">Открыть камеру</Button>
-                    </CardBody>
-                </Card>
+                @if (selectedItem.EventType == AccessEventType.Detection)
+                {
+                    <IfDetection SelectedItem="selectedItem" />
+                }
+                else if (selectedItem.EventType == AccessEventType.Classification)
+                {
+                    <IfClassification SelectedItem="selectedItem" />
+                }
             }
         </div>
     }
@@ -111,11 +83,15 @@ else {
 
     private List<AccessEventReadDTO>? accessEventsList;
     private Dictionary<string, int> countEvents = new Dictionary<string, int>();
+    private Dictionary<string, int> countAi = new Dictionary<string, int>();
 
     private AccessEventReadDTO? selectedItem = null;
 
     private PieChartConfig? _config1;
     private Chart? _chart1;
+
+    private PieChartConfig? _config2;
+    private Chart? _chart2;
 
     private void SelectedItemCallBack(AccessEventReadDTO item)
     {
@@ -134,10 +110,23 @@ else {
         }
     }
 
-    private List<decimal?> ConvretValues() 
+    private void CountAi()
+    {
+        for (var i = 0; i < accessEventsList?.Count; i++)
+        {
+            var nameEnum = Enum.GetName(typeof(AccessEventType), (int)accessEventsList[i].EventType)!;
+
+            if (countAi.ContainsKey(accessEventsList[i].EventType.ToString()))
+                countAi[nameEnum]++;
+            else
+                countAi.Add(nameEnum, 1);
+        }
+    }
+
+    private List<decimal?> ConvretValues(Dictionary<string, int> values)
     {
         var list = new List<decimal?>();
-        var valuesList = countEvents.Values.ToList();
+        var valuesList = values.Values.ToList();
 
         foreach (var item in valuesList)
         {
@@ -158,11 +147,41 @@ else {
                 }
             };
 
-        _config1.Data.Labels = countEvents.Keys.ToList();
+        _config1.Data.Labels = countEvents.Keys.Select(key => Enum.Parse<AccessType>(key).GetDisplayName()).ToList();
         _config1.Data.Datasets.Add(new PieDataset()
             {
                 Label = string.Empty,
-                Data = ConvretValues(),
+                Data = ConvretValues(countEvents),
+                BackgroundColor = new List<string>()
+                {
+                    "rgb(255, 99, 132)",
+                    "rgb(255, 159, 64)",
+                    "rgb(255, 205, 86)",
+                    "rgb(75, 192, 192)",
+                    "rgb(54, 162, 235)",
+                    "rgb(153, 102, 255)",
+                    "rgb(201, 203, 207)"
+                },
+                HoverOffset = 4
+            });
+    }
+
+    private void ConfigChartAiEvents()
+    {
+        _config2 = new PieChartConfig()
+            {
+                Options = new PieOptions()
+                {
+                    Responsive = true,
+                    MaintainAspectRatio = false
+                }
+            };
+
+        _config2.Data.Labels = countAi.Keys.Select(key => Enum.Parse<AccessEventType>(key).GetDisplayName()).ToList();
+        _config2.Data.Datasets.Add(new PieDataset()
+            {
+                Label = string.Empty,
+                Data = ConvretValues(countAi),
                 BackgroundColor = new List<string>()
                 {
                     "rgb(255, 99, 132)",
@@ -189,6 +208,8 @@ else {
             {
                 accessEventsList = result.Take(5).OrderByDescending(x => x.Timestamp).ToList();
                 CountEvents();
+                CountAi();
+                ConfigChartAiEvents();
                 ConfigChartPipeEvents();
                 isLoading = false;
             }

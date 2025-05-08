@@ -3,6 +3,7 @@ using System;
 using AccessModuleSystem.Server;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -11,9 +12,11 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace AccessModuleSystem.Server.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20250507152121_add_new_item")]
+    partial class add_new_item
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -37,16 +40,13 @@ namespace AccessModuleSystem.Server.Migrations
                     b.Property<int>("EventType")
                         .HasColumnType("integer");
 
-                    b.Property<byte[]>("Screenshot")
-                        .HasColumnType("bytea");
-
                     b.Property<int>("Status")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("Timestamp")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<Guid?>("VehicleId")
+                    b.Property<Guid>("VehicleId")
                         .HasColumnType("uuid");
 
                     b.HasKey("Id");
@@ -85,7 +85,8 @@ namespace AccessModuleSystem.Server.Migrations
                             CameraId = new Guid("dbc4b6ba-d49f-4785-8ba0-14516620ae66"),
                             EventType = 1,
                             Status = 0,
-                            Timestamp = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc)
+                            Timestamp = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc),
+                            VehicleId = new Guid("5b037b65-19f1-402a-ad5b-9779ef098b19")
                         });
                 });
 
@@ -182,10 +183,10 @@ namespace AccessModuleSystem.Server.Migrations
                             CreatedAt = new DateTime(2023, 6, 16, 0, 37, 19, 0, DateTimeKind.Utc),
                             Email = "admin@ams.ru",
                             IsBlocked = false,
-                            Name = "Марк",
+                            Name = "Павел",
                             PasswordHash = "admin",
                             Role = 0,
-                            Surname = "Власов",
+                            Surname = "Маркелов",
                             Username = "admin"
                         },
                         new
@@ -251,14 +252,6 @@ namespace AccessModuleSystem.Server.Migrations
                             LicensePlate = "A123BC 30 RUS",
                             OwnerName = "Иванов Иван Иванович",
                             Status = 0
-                        },
-                        new
-                        {
-                            Id = new Guid("8a7cb1e2-3c3b-4f8e-91e3-45b0b8b70c00"),
-                            CreatedAt = new DateTime(2023, 5, 16, 0, 37, 19, 0, DateTimeKind.Utc),
-                            LicensePlate = "О333ОО 30 RUS",
-                            OwnerName = "Неизвестно",
-                            Status = 0
                         });
                 });
 
@@ -272,7 +265,9 @@ namespace AccessModuleSystem.Server.Migrations
 
                     b.HasOne("AccessModuleSystem.Models.Vehicle", "Vehicle")
                         .WithMany()
-                        .HasForeignKey("VehicleId");
+                        .HasForeignKey("VehicleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
                     b.Navigation("Camera");
 
